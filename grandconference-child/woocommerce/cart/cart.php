@@ -83,14 +83,31 @@ do_action( 'woocommerce_before_cart' ); ?>
 
 						<td class="product-thumbnail">
 						<?php
-						$thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+						
+						$product_id = $_product->get_parent_id(); // Get the product ID
+						$thumbnail_url = get_the_post_thumbnail_url( $product_id, 'woocommerce_thumbnail' );
 
-						if ( ! $product_permalink ) {
-							echo $thumbnail; // PHPCS: XSS ok.
-						} else {
-							// printf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $thumbnail ); // PHPCS: XSS ok.
-							echo $thumbnail;
+						// Check if the thumbnail is empty
+						if ( empty( $thumbnail_url ) ) {
+							$_product_image_gallery = get_post_meta($product_id,'_product_image_gallery',true);
+							if(!empty($_product_image_gallery)){
+								$_product_image_gallery = explode(",",$_product_image_gallery);
+								$thumbnail_url = wp_get_attachment_url( $_product_image_gallery[0] );
+							}
 						}
+
+						if(!empty($thumbnail_url)){
+							echo '<img fetchpriority="high" decoding="async" width="300" height="300" src="'.$thumbnail_url.'" class="woocommerce-placeholder wp-post-image" alt="Placeholder">';
+						}else{
+							$thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+							if ( ! $product_permalink ) {
+								echo $thumbnail; // PHPCS: XSS ok.
+							} else {
+								// printf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $thumbnail ); // PHPCS: XSS ok.
+								echo $thumbnail;
+							}
+						}
+
 						?>
 						</td>
 
@@ -118,7 +135,7 @@ do_action( 'woocommerce_before_cart' ); ?>
 						}
 
 						if(isset($cart_item['maximum'])){
-							if($lan === 'french'){
+							if(isset($lan) && $lan === 'french'){
 								$description_number = "Nombre maximum de personnes par chambre: ";
 							}else{
 								$description_number = "Maximum guest per room: ";

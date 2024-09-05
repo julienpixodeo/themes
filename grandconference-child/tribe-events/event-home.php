@@ -39,7 +39,10 @@ $lan = get_field('language',$event_id);
 
 <div class="top-event">
     <div class="top-event-left">
-        <?php echo $title; ?>
+        <div class="wrap-title-image">
+            <?php echo tribe_event_featured_image($event_id, 'full', false); ?>
+            <?php echo $title; ?>
+        </div>
         <div class="tribe-events-schedule tribe-clearfix">
             <?php 
                 // if($lan === 'french'){
@@ -81,7 +84,6 @@ $lan = get_field('language',$event_id);
         <!-- Added by ThemeGoods -->
         <div class="grandconference-tribe-events-content">
             <!-- Event featured image, but exclude link -->
-            <?php echo tribe_event_featured_image($event_id, 'full', false); ?>
 
             <!-- Event content -->
             <?php do_action('tribe_events_single_event_before_the_content') ?>
