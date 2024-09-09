@@ -27,6 +27,7 @@
                     <div class="filter-title">Stars</div>
                 </div>
                 <select name="stars" id="stars-select">
+                    <option value="">Select starts</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>

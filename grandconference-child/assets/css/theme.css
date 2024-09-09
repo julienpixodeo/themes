@@ -371,7 +371,7 @@ body .grandconference-tribe-events-meta {
 .list-hotels-event .item-hotels img{
     width: 100%;
     height: 375px;
-    border-radius: 15px;
+    /* border-radius: 15px; */
     object-fit: cover;
     margin-bottom: 20px;
 }

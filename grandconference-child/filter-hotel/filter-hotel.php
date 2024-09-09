@@ -45,8 +45,7 @@ function filter_hotel(){
     $min_distance = (int) $_POST['min_distance'];
     $max_distance = (int) $_POST['max_distance'];
     $event_id = (int) $_POST['event_id'];
-    $star = isset($_POST['star']) ? $_POST['star'] : '';
-    $star_ratings = !empty($star) ? $star : ["1","2","3","4","5"];
+    $star = isset($_POST['star']) ? (int)$_POST['star'] : '';
 
     $data_hotel = get_post_meta($event_id, 'data_hotel_event', true);
     $lan = get_field('language', $event_id);
@@ -82,16 +81,30 @@ function filter_hotel(){
             $price_array = array_column($data['variations_data'], 'price');
             $minPrice = !empty($price_array) ? min($price_array) : 0;
             // Filter hotels by min_price and max_price
-            if ($minPrice >= $min_price && $minPrice <= $max_price && in_array($hotel_stars, $star_ratings) && $post_distance <= $max_distance) {
-                $hotels[] = array(
-                    'hotel_id' => $hotel_id,
-                    'featured_img_url' => $featured_img_url,
-                    'address' => $address,
-                    'hotel_stars' => $hotel_stars,
-                    'url' => $url,
-                    'attr' => $attr,
-                    'minPrice' => $minPrice,
-                );
+            if(!empty($star)){
+                if ($minPrice >= $min_price && $minPrice <= $max_price && $hotel_stars == $star && $post_distance <= $max_distance && $post_distance >= $min_distance) {
+                    $hotels[] = array(
+                        'hotel_id' => $hotel_id,
+                        'featured_img_url' => $featured_img_url,
+                        'address' => $address,
+                        'hotel_stars' => $hotel_stars,
+                        'url' => $url,
+                        'attr' => $attr,
+                        'minPrice' => $minPrice,
+                    );
+                }
+            }else{
+                if ($minPrice >= $min_price && $minPrice <= $max_price && $post_distance <= $max_distance && $post_distance >= $min_distance) {
+                    $hotels[] = array(
+                        'hotel_id' => $hotel_id,
+                        'featured_img_url' => $featured_img_url,
+                        'address' => $address,
+                        'hotel_stars' => $hotel_stars,
+                        'url' => $url,
+                        'attr' => $attr,
+                        'minPrice' => $minPrice,
+                    );
+                }
             }
         }
 

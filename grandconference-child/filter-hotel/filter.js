@@ -61,6 +61,7 @@ jQuery(document).ready(function ($) {
     $('body').on('click','.apply-filter-each', function(event) {
         event.preventDefault();
         $('.drop-filter').slideUp(100);
+        applyHotelFilters();
     });
 
     // toggle show map
@@ -79,7 +80,11 @@ jQuery(document).ready(function ($) {
   
         var generalSidebarHeight = $sticky.innerHeight();
         var stickyTop = $sticky.offset().top;
-        var stickOffset = 0;
+        if($('.admin-bar').length){
+            var stickOffset = 110;
+        }else{
+            var stickOffset = 78;
+        }
         var stickyStopperPosition = $stickyrStopper.offset().top;
         var stopPoint = stickyStopperPosition - generalSidebarHeight - stickOffset;
         var diff = stopPoint + stickOffset;
@@ -95,7 +100,47 @@ jQuery(document).ready(function ($) {
                 $sticky.css({position: 'absolute', top: 'initial'});
             }
         });
-  
+    }
+
+    var stickyTop_filter = $('.filter-hotel-wrap').offset().top;
+    $(window).scroll(function(){
+        if ($(window).scrollTop() >= stickyTop_filter) {
+            $('.filter-hotel-wrap').addClass('fixed-header');
+        }
+        else {
+            $('.filter-hotel-wrap').removeClass('fixed-header');
+        }
+    });
+
+    // apply Hotel Filters
+    function applyHotelFilters() {
+        // Fetch values from the context
+        var event_id = $('.filter-hotel .event-id').val(),
+        min_price =  $('.filter-hotel .min-price').val(),
+        max_price =  $('.filter-hotel .max-price').val(),
+        min_distance = $('.filter-hotel .min-distance').val(),
+        max_distance =  $('.filter-hotel .max-distance').val();
+        star =  $('.filter-hotel #stars-select').val();
+        
+        $.ajax({
+            url: jaxsr.url,
+            type: 'POST',
+            data: {
+                action: 'filter_hotel',
+                min_price: min_price,
+                max_price: max_price,
+                min_distance: min_distance,
+                max_distance: max_distance,
+                event_id: event_id,
+                star: star,
+            },
+            success: function(response) {
+                $('.list-hotels-event').html(response.html);
+            },
+            error: function(err) {
+                console.log(err);
+            }
+        });
     }
 
     // ajax js filter hotel
