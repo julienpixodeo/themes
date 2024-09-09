@@ -60,30 +60,15 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
         </div>
     </div>
     <div class="filter-hotel-wrap">
-        <form action="" class="filter-hotel">
-            <div class="wrap-item-filter">
-                <button class="show-filter">Price<i class="fal fa-angle-down"></i></button>
-                <div class="drop-filter">
-                    Test
-                </div>
-            </div>
-
-            <div class="wrap-item-filter">
-                <button class="show-filter">Stars<i class="fal fa-angle-down"></i></button>
-                <div class="drop-filter">
-                    Test Stars
-                </div>
-            </div>
-
-            <div class="wrap-item-filter">
-                <button class="show-filter">Distance <i class="fal fa-angle-down"></i></button>
-                <div class="drop-filter">
-                    Test distance 
-                </div>
-            </div>
-        </form>
+        <?php 
+            set_query_var('event_id', $event_id);
+            get_template_part('filter-hotel/form-filter'); 
+        ?>
         <div class="show-hide-map">
-
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider round"></span>
+            </label>
         </div>
     </div>
     <div class="wrap-list-hotel">
@@ -221,12 +206,6 @@ if (!empty($location)) {
                 });
             }
             initMap();
-
-            $('body').on('click','.show-filter',function(event){
-                event.preventDefault();
-                $('.drop-filter').not($(this).closest('.wrap-item-filter').find('.drop-filter')).slideUp(100);
-                $(this).closest('.wrap-item-filter').find('.drop-filter').slideToggle(100);
-            })
         });
     </script>
 <?php }
