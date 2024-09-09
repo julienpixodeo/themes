@@ -79,6 +79,8 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
     <div class="wrap-list-hotel">
         <div class="list-hotels-event">
             <?php
+            $locations = array();
+
             if ($data_hotel) {
                 // Step 1: Collect all the hotel data with the minimum price
                 $hotels = array();
@@ -131,6 +133,19 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
                         'attr' => $attr,
                         'minPrice' => $minPrice,
                     );
+
+                    if(!empty($address)){
+                        $locations[] = [
+                            'lat' => $address['lat'],
+                            'lng' => $address['lng'],
+                            'img' => $featured_img_url,
+                            'title' => get_the_title($hotel_id),
+                            'address' => $address['address'],
+                            'minPrice' => $from . " " . $minPrice . get_woocommerce_currency_symbol(get_option('woocommerce_currency')),
+                            'url' => $url,
+                            'hotel_stars' => $hotel_stars
+                        ];
+                    }
                 }
 
                 // Step 2: Sort the collected data by the minimum price
@@ -186,31 +201,92 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
     
 </div>
 <?php
-if (!empty($location)) {
+if(!empty($locations)){
     ?>
     <script>
         jQuery(document).ready(function ($) {
             function initMap() {
-                var myLatLng = { lat: <?php echo $location['lat']; ?>, lng: <?php echo $location['lng']; ?>};
+                var locations = <?php echo json_encode($locations); ?>;
+
+                // Calculate the center of the map
+                var latSum = 0, lngSum = 0;
+                locations.forEach(function(location) {
+                    latSum += location.lat;
+                    lngSum += location.lng;
+                });
+                var centerLat = latSum / locations.length;
+                var centerLng = lngSum / locations.length;
+
                 var map = new google.maps.Map(document.getElementById('list-hotel-map'), {
-                    zoom: 16,
-                    disableDefaultUI: true,
-                    center: myLatLng
+                    zoom: 4,
+                    center: { lat: centerLat, lng: centerLng },
+                    disableDefaultUI: true
                 });
-                var marker = new google.maps.Marker({
-                    position: myLatLng,
-                    map: map,
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        fillColor: '#ff2d55',
-                        fillOpacity: 0.5,
-                        scale: 50,
-                        strokeColor: 'transparent',
-                        strokeWeight: 0,
-                    },
+
+                var bounds = new google.maps.LatLngBounds();
+
+                locations.forEach(function(location) {
+                    var marker = new google.maps.Marker({
+                        position: { lat: location.lat, lng: location.lng },
+                        map: map
+                    });
+
+                    if(location.hotel_stars == 1){
+                        var star = '<i class="fas fa-star"></i>';
+                    }
+
+                    if(location.hotel_stars == 2){
+                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    }
+
+                    if(location.hotel_stars == 3){
+                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    }
+
+                    if(location.hotel_stars == 4){
+                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    }
+
+                    if(location.hotel_stars == 5){
+                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    }
+
+                    var infowindow = new google.maps.InfoWindow({
+                        content: `<div class="item-hotels-map">
+                            <a href="${location.url}">
+                                <img src="${location.img}" alt="" class="thumbnail">
+                            </a>
+                            <div class="wrap-title-rating">
+                                <a href="${location.url}" class="title">${location.title}</a>
+                                <div class="review-hotel">
+                                    <div class="list-star">
+                                        ${star}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="infor">
+                                <span>${location.address}</span>
+                            </div>
+                            <h3 class="price">
+                                ${location.minPrice}
+                            </h3>
+                        </div>`
+                    });
+
+                    marker.addListener('click', function() {
+                        infowindow.open(map, marker);
+                    });
+
+                    bounds.extend(marker.position);
                 });
+                
+                // Adjust map to fit all markers
+                map.fitBounds(bounds);
             }
+
             initMap();
         });
     </script>
-<?php }
+    <?php
+}
+?>
