@@ -136,6 +136,7 @@ jQuery(document).ready(function ($) {
             },
             success: function(response) {
                 $('.list-hotels-event').html(response.html);
+                $('.count-hotel').text(response.count +  " hotels");
             },
             error: function(err) {
                 console.log(err);

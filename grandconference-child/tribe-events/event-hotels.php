@@ -71,6 +71,11 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
             </label>
         </div>
     </div>
+    <div class="count-filter-wrap">
+        <a href="<?php echo home_url() ?>">Accueil</a>
+        <span>></span>
+        <span class="count-hotel"><?php echo count($data_hotel); ?> hotels</span>
+    </div>
     <div class="wrap-list-hotel">
         <div class="list-hotels-event">
             <?php

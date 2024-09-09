@@ -145,7 +145,8 @@ function filter_hotel(){
     $html = ob_get_contents();
     ob_end_clean();
     $return = array(
-        'html' => $html
+        'html' => $html,
+        'count' => count($hotels)
     );
 
     wp_send_json($return);

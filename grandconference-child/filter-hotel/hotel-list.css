@@ -3,6 +3,9 @@
     display: flex;
     flex-wrap: wrap;
 }
+.count-filter-wrap {
+    margin: 0 0 60px 40px;
+}
 .list-hotels-event {
     width: calc(100% - 33.33% - 13px);
     margin: 0;
@@ -26,10 +29,19 @@
 .filter-hotel-wrap {
     background: #ff96a9;
     padding: 20px 40px;
-    margin: 0 0 60px 0;
+    margin: 0 0 15px 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+.count-filter-wrap a, .count-filter-wrap span{
+    color:#ff2d55 !important;
+}
+.count-filter-wrap a, .count-filter-wrap span:last-child{
+    font-weight: 700;
+}
+.count-filter-wrap span:nth-child(2){
+    padding: 0 8px;
 }
 .show-filter {
     box-sizing: border-box ;
