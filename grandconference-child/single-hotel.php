@@ -40,7 +40,7 @@ $title_price = ($lan === 'french') ? get_field('price_title_hotel_fr', 'option')
 $desired_array = null;
 $hotel_stars = (!empty(get_field('hotel_stars',$post_id))) ? get_field('hotel_stars',$post_id) : 5;
 $hide_ticket = get_field('hide_ticket',$event_id);
-
+$hide_book_your_hotel = get_field('hide_book_your_hotel',$event_id);
 ?>
 <div class="content-details-hotel" data-lang="<?php echo $lan; ?>">
     <ul class="menu-single-event">
@@ -61,10 +61,16 @@ $hide_ticket = get_field('hide_ticket',$event_id);
             <a href="<?php echo esc_url($link . 'planning'); ?>"
                 class="themelink"><?php echo esc_html($text_menu_evp); ?></a>
         </li>
-        <li>
-            <a href="<?php echo esc_url($link . 'hotels'); ?>"
-                class="themelink active"><?php echo esc_html($text_menu_evhotel); ?></a>
-        </li>
+        <?php
+            if(!$hide_book_your_hotel || empty($hide_book_your_hotel)){
+                ?>
+                <li>
+                    <a href="<?php echo esc_url($link . 'hotels'); ?>"
+                        class="themelink active"><?php echo esc_html($text_menu_evhotel); ?></a>
+                </li>
+                <?php
+            }
+        ?>
         <li>
             <a href="<?php echo esc_url($link . 'partners'); ?>"
                 class="themelink"><?php echo esc_html($text_menu_evpartners); ?></a>

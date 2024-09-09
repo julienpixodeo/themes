@@ -43,6 +43,7 @@ if (!get_query_var('tickets') && !get_query_var('planning') && !get_query_var('h
 }
 
 $hide_ticket = get_field('hide_ticket',$event_id);
+$hide_book_your_hotel = get_field('hide_book_your_hotel',$event_id);
 
 ?>
 
@@ -64,9 +65,15 @@ $hide_ticket = get_field('hide_ticket',$event_id);
         <li>
             <a href="<?php echo esc_url($link . 'planning'); ?>" class="themelink <?php echo esc_attr($class_planning); ?>"><?php echo esc_html($text_menu_evp); ?></a>
         </li>
-        <li>
-            <a href="<?php echo esc_url($link . 'hotels'); ?>" class="themelink <?php echo esc_attr($class_hotels); ?>"><?php echo esc_html($text_menu_evhotel); ?></a>
-        </li>
+        <?php
+            if(!$hide_book_your_hotel || empty($hide_book_your_hotel)){
+                ?>
+                <li>
+                    <a href="<?php echo esc_url($link . 'hotels'); ?>" class="themelink <?php echo esc_attr($class_hotels); ?>"><?php echo esc_html($text_menu_evhotel); ?></a>
+                </li>
+                <?php
+            }
+        ?>
         <li>
             <a href="<?php echo esc_url($link . 'partners'); ?>" class="themelink <?php echo esc_attr($class_partners); ?>"><?php echo esc_html($text_menu_evpartners); ?></a>
         </li>
