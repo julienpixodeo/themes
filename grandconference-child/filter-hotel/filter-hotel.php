@@ -57,6 +57,8 @@ function filter_hotel(){
         $lng = $location['lng'];
     }
 
+    $locations = array();
+
     if ($data_hotel) {
         // Collect hotel data
         $hotels = array();
@@ -92,6 +94,18 @@ function filter_hotel(){
                         'attr' => $attr,
                         'minPrice' => $minPrice,
                     );
+                    if(!empty($address)){
+                        $locations[] = [
+                            'lat' => $address['lat'],
+                            'lng' => $address['lng'],
+                            'img' => $featured_img_url,
+                            'title' => get_the_title($hotel_id),
+                            'address' => $address['address'],
+                            'minPrice' => $from . " " . $minPrice . get_woocommerce_currency_symbol(get_option('woocommerce_currency')),
+                            'url' => $url,
+                            'hotel_stars' => $hotel_stars
+                        ];
+                    }
                 }
             }else{
                 if ($minPrice >= $min_price && $minPrice <= $max_price && $post_distance <= $max_distance && $post_distance >= $min_distance) {
@@ -104,6 +118,18 @@ function filter_hotel(){
                         'attr' => $attr,
                         'minPrice' => $minPrice,
                     );
+                    if(!empty($address)){
+                        $locations[] = [
+                            'lat' => $address['lat'],
+                            'lng' => $address['lng'],
+                            'img' => $featured_img_url,
+                            'title' => get_the_title($hotel_id),
+                            'address' => $address['address'],
+                            'minPrice' => $from . " " . $minPrice . get_woocommerce_currency_symbol(get_option('woocommerce_currency')),
+                            'url' => $url,
+                            'hotel_stars' => $hotel_stars
+                        ];
+                    }
                 }
             }
         }
@@ -146,7 +172,8 @@ function filter_hotel(){
     ob_end_clean();
     $return = array(
         'html' => $html,
-        'count' => count($hotels)
+        'count' => count($hotels),
+        'locations' => $locations
     );
 
     wp_send_json($return);

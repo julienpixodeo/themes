@@ -137,11 +137,75 @@ jQuery(document).ready(function ($) {
             success: function(response) {
                 $('.list-hotels-event').html(response.html);
                 $('.count-hotel').text(response.count +  " hotels");
+                initMap(response.locations);
             },
             error: function(err) {
                 console.log(err);
             }
         });
+    }
+
+    // Function to initialize the map
+    function initMap(locations) {
+        // Calculate the center of the map
+        var latSum = 0, lngSum = 0;
+        locations.forEach(function(location) {
+            latSum += location.lat;
+            lngSum += location.lng;
+        });
+        var centerLat = latSum / locations.length;
+        var centerLng = lngSum / locations.length;
+
+        var map = new google.maps.Map(document.getElementById('list-hotel-map'), {
+            zoom: 4,
+            center: { lat: centerLat, lng: centerLng },
+            disableDefaultUI: true
+        });
+
+        var bounds = new google.maps.LatLngBounds();
+
+        locations.forEach(function(location) {
+            var marker = new google.maps.Marker({
+                position: { lat: location.lat, lng: location.lng },
+                map: map
+            });
+
+            var star = '';
+            for (var i = 0; i < location.hotel_stars; i++) {
+                star += '<i class="fas fa-star"></i>';
+            }
+
+            var infowindow = new google.maps.InfoWindow({
+                content: `<div class="item-hotels-map">
+                    <a href="${location.url}">
+                        <img src="${location.img}" alt="" class="thumbnail">
+                    </a>
+                    <div class="wrap-title-rating">
+                        <a href="${location.url}" class="title">${location.title}</a>
+                        <div class="review-hotel">
+                            <div class="list-star">
+                                ${star}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infor">
+                        <span>${location.address}</span>
+                    </div>
+                    <h3 class="price">
+                        ${location.minPrice}
+                    </h3>
+                </div>`
+            });
+
+            marker.addListener('click', function() {
+                infowindow.open(map, marker);
+            });
+
+            bounds.extend(marker.position);
+        });
+
+        // Adjust the map to fit all markers
+        map.fitBounds(bounds);
     }
 
     // ajax js filter hotel
