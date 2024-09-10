@@ -482,6 +482,29 @@ body #stars-select {
 #list-hotel-map .slick-dots li button:before {
     content:none !important;
 }
+
+@media (max-width:991px){
+    .list-hotels-event {
+        width: 100%;
+        order: 2;
+    }
+    .list-hotel-map-wrap {
+        width: 100%;
+        padding-left: 0;
+        right: unset !important;
+        top: unset !important;
+        position: relative !important;
+        height: max-content;
+        margin-bottom: 50px;
+    }
+    #list-hotel-map {
+        height: 50vw;
+    }
+    .wrap-list-hotel.active .list-hotels-event {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
 @media (max-width:575px){
     .address-box {
         position: relative;
@@ -511,5 +534,57 @@ body #stars-select {
     }
     .list-hotels-event .item-hotels img {
         height: 250px;
+    }
+    .fixed-header {
+        position: relative !important;
+        top: unset !important;
+        width: unset !important;
+        left: unset !important;
+        z-index: unset !important;
+    }
+    .filter-hotel-wrap {
+        padding: 20px 15px;
+        display: block;
+    }
+    .filter-hotel {
+        display: block;
+    }
+    .wrap-item-filter {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    .show-filter {
+        width: 100%;
+    }
+    .drop-filter {
+        width: calc(100% - 70px);
+        top: 38px;
+        z-index: 9;
+    }
+    .show-hide-map {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .count-filter-wrap {
+        margin: 0 0 20px 15px;
+    }
+    .wrap-list-hotel {
+        padding: 0 15px;
+    }
+    .list-hotel-map-wrap {
+        margin-bottom: 30px;
+    }
+    .list-hotels-event {
+        display: block;
+    }
+    .list-hotels-event .item-hotels {
+        margin-bottom: 20px;
+    }
+    .wrap-title-rating {
+        display: block;
+    }
+    #list-hotel-map {
+        height: 400px;
     }
 }

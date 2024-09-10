@@ -1,4 +1,5 @@
 <?php
+// haversine distance
 function haversine_distance($lat1, $lng1, $lat2, $lng2) {
     $earth_radius = 6371; // Earth radius in kilometers
 
@@ -15,6 +16,7 @@ function haversine_distance($lat1, $lng1, $lat2, $lng2) {
     return $distance;
 }
 
+// get posts within distance
 function get_posts_within_distance($lat, $lng, $distance) {
     global $wpdb;
 
@@ -38,6 +40,7 @@ function get_posts_within_distance($lat, $lng, $distance) {
     return $filtered_posts;
 }
 
+// filter hotel
 function filter_hotel() {
     ob_start();
     // Get and sanitize input data
@@ -97,7 +100,7 @@ function filter_hotel() {
                 $attr = $url_de_hotel ? 'target="_blank"' : '';
 
                 $gallery = get_field('gallery', $hotel_id);
-                
+
                 $gallery_images_urls = array();
 
                 if ($featured_img_url) {

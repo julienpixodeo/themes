@@ -14,7 +14,6 @@ jQuery(document).ready(function ($) {
         }
     });
     $("#price-amount").text($("#price-range").slider("values", 0) + currency + " - " + $("#price-range").slider("values", 1) + currency);
-    // $("#price-amount-btn").text($("#price-range").slider("values", 0) + currency + " - " + $("#price-range").slider("values", 1) + currency);
     $(".min-price").val($("#price-range").slider("values", 0));
     $(".max-price").val($("#price-range").slider("values", 1));
 
@@ -32,7 +31,6 @@ jQuery(document).ready(function ($) {
         }
     });
     $("#address-amount").text($("#address-range").slider("values", 0) + "Km - " + $("#address-range").slider("values", 1)+ "Km");
-    // $("#address-amount-btn").text($("#address-range").slider("values", 0) + "Km - " + $("#address-range").slider("values", 1)+ "Km");
     $(".min-distance").val($("#address-range").slider("values", 0));
     $(".max-distance").val($("#address-range").slider("values", 1));
 
