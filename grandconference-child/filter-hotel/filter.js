@@ -147,110 +147,113 @@ jQuery(document).ready(function ($) {
 
     // Function to initialize the map
     async function initMap(locations) {
-        // Request needed libraries.
+        // Load necessary Google Maps libraries
         const { Map } = await google.maps.importLibrary("maps");
         const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
-        // Calculate the center of the map
-        var latSum = 0, lngSum = 0;
-        locations.forEach(function(location) {
+        // Calculate center of the map
+        let latSum = 0, lngSum = 0;
+        locations.forEach(location => {
             latSum += location.lat;
             lngSum += location.lng;
         });
-        var centerLat = latSum / locations.length;
-        var centerLng = lngSum / locations.length;
+        const centerLat = latSum / locations.length;
+        const centerLng = lngSum / locations.length;
 
+        // Initialize the map
         const map = new Map(document.getElementById("list-hotel-map"), {
             zoom: 4,
             center: { lat: centerLat, lng: centerLng },
             mapId: "4504f8b37365c3d0",
         });
 
-        var bounds = new google.maps.LatLngBounds();
+        const bounds = new google.maps.LatLngBounds();
+        let currentInfoWindow = null; // Track the currently open InfoWindow
 
-        // Loop through each location and add a marker
-        locations.forEach((location) => {
+        // Function to create a marker
+        function createMarker(location) {
             const priceTag = document.createElement("div");
             priceTag.className = "price-tag";
             priceTag.textContent = location.price;
 
-            // Create and add the marker to the map
-            const marker = new AdvancedMarkerElement({
+            return new AdvancedMarkerElement({
                 map,
                 position: { lat: location.lat, lng: location.lng },
                 content: priceTag,
             });
+        }
 
-            var star = '';
-            for (var i = 0; i < location.hotel_stars; i++) {
-                star += '<i class="fas fa-star"></i>';
-            }
-
-            // Generate gallery HTML
-            var galleryHtml = '';
+        // Function to generate the gallery HTML
+        function createGalleryHtml(location) {
             if (location.gallery_images && location.gallery_images.length) {
-                galleryHtml = '<div class="slick-slider">';
-                location.gallery_images.forEach((imageUrl) => {
-                    galleryHtml += `<a href="${location.url}"><img src="${imageUrl}" alt="Hotel image" class="gallery-img"></a>`;
-                });
-                galleryHtml += '</div>';
+                const images = location.gallery_images.map(imageUrl =>
+                    `<a href="${location.url}"><img src="${imageUrl}" alt="Hotel image" class="gallery-img"></a>`
+                ).join('');
+                return `<div class="slick-slider">${images}</div>`;
             }
+            return '';
+        }
 
-            var infowindow = new google.maps.InfoWindow({
-                content: `<div class="item-hotels-map">
-                    <div>
-                        ${galleryHtml}
-                    </div>
-                    <div class="wrap-title-rating">
-                        <a href="${location.url}" class="title">${location.title}</a>
-                        <div class="review-hotel">
-                            <div class="list-star">
-                                ${star}
+        // Loop through locations and add markers
+        locations.forEach((location) => {
+            const marker = createMarker(location);
+            const starHtml = '<i class="fas fa-star"></i>'.repeat(location.hotel_stars);
+            const galleryHtml = createGalleryHtml(location);
+
+            const infowindow = new google.maps.InfoWindow({
+                content: `<div class="item-hotels-map item-hotels-map-${location.id}">
+                            <div>${galleryHtml}</div>
+                            <div class="wrap-title-rating">
+                                <a href="${location.url}" class="title">${location.title}</a>
+                                <div class="review-hotel">
+                                    <div class="list-star">${starHtml}</div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="infor">
-                        <span>${location.address}</span>
-                    </div>
-                    <h3 class="price">
-                        ${location.minPrice}
-                    </h3>
-                </div>`
+                            <div class="infor"><span>${location.address}</span></div>
+                            <h3 class="price">${location.minPrice}</h3>
+                        </div>`
             });
 
-            marker.addListener('click', function() {
+            // Marker click event
+            marker.addListener('click', () => {
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                }
                 infowindow.open(map, marker);
                 currentInfoWindow = infowindow;
-                setTimeout(function() {
-                    $('.slick-slider').slick({
-                        dots: true,
-                        infinite: true,
-                        speed: 300,
-                        slidesToShow: 1,
-                        slidesToScroll: 1
-                    });
-                }, 100);
+            });
+
+            // Initialize Slick slider when the infowindow opens
+            infowindow.addListener('domready', () => {
+                $(`.item-hotels-map-${location.id} .slick-slider`).slick({
+                    dots: true,
+                    infinite: true,
+                    speed: 300,
+                    slidesToShow: 1,
+                    slidesToScroll: 1
+                });
             });
 
             bounds.extend(marker.position);
-
-            // Close InfoWindow on click outside
-            $(document).on('click', function (e) {
-                if (!$('#list-hotel-map').has(e.target).length && currentInfoWindow) {
-                    currentInfoWindow.close();
-                    currentInfoWindow = null;
-                }
-            });
-
-            // Prevent click inside InfoWindow from closing it
-            google.maps.event.addListener(map, 'click', function (e) {
-                if (currentInfoWindow) {
-                    currentInfoWindow.close();
-                    currentInfoWindow = null;
-                }
-            });
         });
+
         // Adjust map to fit all markers
         map.fitBounds(bounds);
+
+        // Close InfoWindow when clicking outside of the map
+        $(document).on('click', function (e) {
+            if (!$('#list-hotel-map').has(e.target).length && currentInfoWindow) {
+                currentInfoWindow.close();
+                currentInfoWindow = null;
+            }
+        });
+
+        // Prevent InfoWindow closure when clicking on map itself
+        google.maps.event.addListener(map, 'click', function () {
+            if (currentInfoWindow) {
+                currentInfoWindow.close();
+                currentInfoWindow = null;
+            }
+        });
     }
 });

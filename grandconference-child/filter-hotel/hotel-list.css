@@ -479,7 +479,9 @@ body #stars-select {
 #list-hotel-map > div:nth-child(2){
     display: none !important;
 }
-
+#list-hotel-map .slick-dots li button:before {
+    content:none !important;
+}
 @media (max-width:575px){
     .address-box {
         position: relative;
