@@ -52,6 +52,7 @@ jQuery(document).ready(function ($) {
     $(document).on('click', function(event) {
         if (!$(event.target).closest('.wrap-item-filter').length) {
             $('.drop-filter').slideUp(100); // Hide all .drop-filter elements
+            applyHotelFilters();
         }
     });
     
