@@ -101,8 +101,9 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
                         $attr = '';
                     }
 
+                    $gallery = get_field('gallery', $hotel_id);
+
                     if (!$featured_img_url) {
-                        $gallery = get_field('gallery', $hotel_id);
                         if ($gallery) {
                             $featured_img_url = wp_get_attachment_image_url($gallery[0], 'full');
                         } else {
@@ -122,6 +123,22 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
                         }
                     }
 
+                    $gallery_images_urls = array();
+
+                    if ($featured_img_url) {
+                        $gallery_images_urls[] = $featured_img_url; 
+                    }
+
+                    if ($gallery) {
+                        foreach ($gallery as $image_id) {
+                            $gallery_images_urls[] = wp_get_attachment_image_url($image_id, 'full');
+                        }
+                    } 
+
+                    if (!$featured_img_url && empty($gallery)) {
+                        $gallery_images_urls[] = home_url('/wp-content/uploads/woocommerce-placeholder.png');
+                    }
+
                     $minPrice = !empty($price_array) ? min($price_array) : 0;
 
                     $hotels[] = array(
@@ -138,10 +155,11 @@ $from = ($lan === 'french') ? 'Prix' : 'Price';
                         $locations[] = [
                             'lat' => $address['lat'],
                             'lng' => $address['lng'],
-                            'img' => $featured_img_url,
+                            'gallery_images' => $gallery_images_urls,
                             'title' => get_the_title($hotel_id),
                             'address' => $address['address'],
                             'minPrice' => $from . " " . $minPrice . get_woocommerce_currency_symbol(get_option('woocommerce_currency')),
+                            'price' => $minPrice . " €",
                             'url' => $url,
                             'hotel_stars' => $hotel_stars
                         ];
@@ -205,7 +223,11 @@ if(!empty($locations)){
     ?>
     <script>
         jQuery(document).ready(function ($) {
-            function initMap() {
+            async function initMap() {
+                // Request needed libraries.
+                const { Map } = await google.maps.importLibrary("maps");
+                const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
                 var locations = <?php echo json_encode($locations); ?>;
 
                 // Calculate the center of the map
@@ -217,45 +239,47 @@ if(!empty($locations)){
                 var centerLat = latSum / locations.length;
                 var centerLng = lngSum / locations.length;
 
-                var map = new google.maps.Map(document.getElementById('list-hotel-map'), {
+                const map = new Map(document.getElementById("list-hotel-map"), {
                     zoom: 4,
                     center: { lat: centerLat, lng: centerLng },
-                    disableDefaultUI: true
+                    mapId: "4504f8b37365c3d0",
                 });
 
                 var bounds = new google.maps.LatLngBounds();
 
-                locations.forEach(function(location) {
-                    var marker = new google.maps.Marker({
+                // Loop through each location and add a marker
+                locations.forEach((location) => {
+                    const priceTag = document.createElement("div");
+                    priceTag.className = "price-tag";
+                    priceTag.textContent = location.price;
+
+                    // Create and add the marker to the map
+                    const marker = new AdvancedMarkerElement({
+                        map,
                         position: { lat: location.lat, lng: location.lng },
-                        map: map
+                        content: priceTag,
                     });
 
-                    if(location.hotel_stars == 1){
-                        var star = '<i class="fas fa-star"></i>';
+                    var star = '';
+                    for (var i = 0; i < location.hotel_stars; i++) {
+                        star += '<i class="fas fa-star"></i>';
                     }
 
-                    if(location.hotel_stars == 2){
-                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i>';
-                    }
-
-                    if(location.hotel_stars == 3){
-                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
-                    }
-
-                    if(location.hotel_stars == 4){
-                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
-                    }
-
-                    if(location.hotel_stars == 5){
-                        var star = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    // Generate gallery HTML
+                    var galleryHtml = '';
+                    if (location.gallery_images && location.gallery_images.length) {
+                        galleryHtml = '<div class="slick-slider">';
+                        location.gallery_images.forEach((imageUrl) => {
+                            galleryHtml += `<a href="${location.url}"><img src="${imageUrl}" alt="Hotel image" class="gallery-img"></a>`;
+                        });
+                        galleryHtml += '</div>';
                     }
 
                     var infowindow = new google.maps.InfoWindow({
                         content: `<div class="item-hotels-map">
-                            <a href="${location.url}">
-                                <img src="${location.img}" alt="" class="thumbnail">
-                            </a>
+                            <div>
+                                ${galleryHtml}
+                            </div>
                             <div class="wrap-title-rating">
                                 <a href="${location.url}" class="title">${location.title}</a>
                                 <div class="review-hotel">
@@ -275,11 +299,36 @@ if(!empty($locations)){
 
                     marker.addListener('click', function() {
                         infowindow.open(map, marker);
+                        currentInfoWindow = infowindow;
+                        setTimeout(function() {
+                            $('.slick-slider').slick({
+                                dots: true,
+                                infinite: true,
+                                speed: 300,
+                                slidesToShow: 1,
+                                slidesToScroll: 1
+                            });
+                        }, 100);
                     });
 
                     bounds.extend(marker.position);
+
+                    // Close InfoWindow on click outside
+                    $(document).on('click', function (e) {
+                        if (!$('#list-hotel-map').has(e.target).length && currentInfoWindow) {
+                            currentInfoWindow.close();
+                            currentInfoWindow = null;
+                        }
+                    });
+
+                    // Prevent click inside InfoWindow from closing it
+                    google.maps.event.addListener(map, 'click', function (e) {
+                        if (currentInfoWindow) {
+                            currentInfoWindow.close();
+                            currentInfoWindow = null;
+                        }
+                    });
                 });
-                
                 // Adjust map to fit all markers
                 map.fitBounds(bounds);
             }

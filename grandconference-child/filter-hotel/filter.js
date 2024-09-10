@@ -146,7 +146,11 @@ jQuery(document).ready(function ($) {
     }
 
     // Function to initialize the map
-    function initMap(locations) {
+    async function initMap(locations) {
+        // Request needed libraries.
+        const { Map } = await google.maps.importLibrary("maps");
+        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
         // Calculate the center of the map
         var latSum = 0, lngSum = 0;
         locations.forEach(function(location) {
@@ -156,18 +160,25 @@ jQuery(document).ready(function ($) {
         var centerLat = latSum / locations.length;
         var centerLng = lngSum / locations.length;
 
-        var map = new google.maps.Map(document.getElementById('list-hotel-map'), {
+        const map = new Map(document.getElementById("list-hotel-map"), {
             zoom: 4,
             center: { lat: centerLat, lng: centerLng },
-            disableDefaultUI: true
+            mapId: "4504f8b37365c3d0",
         });
 
         var bounds = new google.maps.LatLngBounds();
 
-        locations.forEach(function(location) {
-            var marker = new google.maps.Marker({
+        // Loop through each location and add a marker
+        locations.forEach((location) => {
+            const priceTag = document.createElement("div");
+            priceTag.className = "price-tag";
+            priceTag.textContent = location.price;
+
+            // Create and add the marker to the map
+            const marker = new AdvancedMarkerElement({
+                map,
                 position: { lat: location.lat, lng: location.lng },
-                map: map
+                content: priceTag,
             });
 
             var star = '';
@@ -175,11 +186,21 @@ jQuery(document).ready(function ($) {
                 star += '<i class="fas fa-star"></i>';
             }
 
+            // Generate gallery HTML
+            var galleryHtml = '';
+            if (location.gallery_images && location.gallery_images.length) {
+                galleryHtml = '<div class="slick-slider">';
+                location.gallery_images.forEach((imageUrl) => {
+                    galleryHtml += `<a href="${location.url}"><img src="${imageUrl}" alt="Hotel image" class="gallery-img"></a>`;
+                });
+                galleryHtml += '</div>';
+            }
+
             var infowindow = new google.maps.InfoWindow({
                 content: `<div class="item-hotels-map">
-                    <a href="${location.url}">
-                        <img src="${location.img}" alt="" class="thumbnail">
-                    </a>
+                    <div>
+                        ${galleryHtml}
+                    </div>
                     <div class="wrap-title-rating">
                         <a href="${location.url}" class="title">${location.title}</a>
                         <div class="review-hotel">
@@ -199,12 +220,37 @@ jQuery(document).ready(function ($) {
 
             marker.addListener('click', function() {
                 infowindow.open(map, marker);
+                currentInfoWindow = infowindow;
+                setTimeout(function() {
+                    $('.slick-slider').slick({
+                        dots: true,
+                        infinite: true,
+                        speed: 300,
+                        slidesToShow: 1,
+                        slidesToScroll: 1
+                    });
+                }, 100);
             });
 
             bounds.extend(marker.position);
-        });
 
-        // Adjust the map to fit all markers
+            // Close InfoWindow on click outside
+            $(document).on('click', function (e) {
+                if (!$('#list-hotel-map').has(e.target).length && currentInfoWindow) {
+                    currentInfoWindow.close();
+                    currentInfoWindow = null;
+                }
+            });
+
+            // Prevent click inside InfoWindow from closing it
+            google.maps.event.addListener(map, 'click', function (e) {
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                    currentInfoWindow = null;
+                }
+            });
+        });
+        // Adjust map to fit all markers
         map.fitBounds(bounds);
     }
 
@@ -242,5 +288,5 @@ jQuery(document).ready(function ($) {
                 console.log(err);
             }
         });
-    }); 
+    });
 });
