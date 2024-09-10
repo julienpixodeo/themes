@@ -253,40 +253,4 @@ jQuery(document).ready(function ($) {
         // Adjust map to fit all markers
         map.fitBounds(bounds);
     }
-
-    // ajax js filter hotel
-    $('.filter-hotel').on('click','#apply-filters',function(e){  
-        e.preventDefault();
-        var event_id = $('.filter-hotel .event-id').val(),
-        min_price = $('.filter-hotel .min-price').val(),
-        max_price = $('.filter-hotel .max-price').val(),
-        min_distance = $('.filter-hotel .min-distance').val(),
-        max_distance = $('.filter-hotel .max-distance').val();
-        var star = [];
-
-        $('input.star-review[type="checkbox"]:checked').each(function() {
-            star.push($(this).val());
-        });
-        
-        console.log(star);
-        $.ajax({
-            url: jaxsr.url,
-            type :'POST',
-            data : {
-                action : 'filter_hotel',
-                min_price: min_price,
-                max_price: max_price,
-                min_distance: min_distance,
-                max_distance: max_distance,
-                event_id: event_id,
-                star: star,
-            },
-            success: function (response) {
-                $('.list-hotels-event').html(response.html);
-            },
-            error: function(err){
-                console.log(err);
-            }
-        });
-    });
 });
