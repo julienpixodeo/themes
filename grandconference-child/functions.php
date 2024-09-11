@@ -26,12 +26,21 @@ function phn_scripts() {
 	wp_enqueue_style('fancyapps-css', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css', array(), time(), 'all');
     wp_enqueue_style('theme-css', get_stylesheet_directory_uri() . '/assets/css/theme.css', array(), time(), 'all');
     wp_enqueue_style('event-css', get_stylesheet_directory_uri() . '/assets/css/event.css', array(), time(), 'all');
+    wp_enqueue_style('account-css', get_stylesheet_directory_uri() . '/account/account.css', array(), time(), 'all');
+
 	wp_enqueue_script('maps-script', 'https://maps.googleapis.com/maps/api/js?libraries=places&key='.API_MAP.'&language=fr&region=FR', array('jquery'), time(), true);
 	wp_enqueue_script('fancyapps-script', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array('jquery'), time(), true);
 	wp_enqueue_script('slick-script', get_stylesheet_directory_uri() . '/assets/slick/slick.min.js', array('jquery'), time(), true);
+	wp_enqueue_script('jquery.validate.min.js', get_stylesheet_directory_uri() . '/assets/js/jquery.validate.min.js', array(), time(), true);
 	wp_enqueue_script('theme-script', get_stylesheet_directory_uri() . '/assets/js/theme.js', array('jquery'), time(), true);
     wp_enqueue_script('ajax-script', get_stylesheet_directory_uri() . '/assets/js/ajax.js', array('jquery'), time(), true);
     wp_enqueue_script('event-script', get_stylesheet_directory_uri() . '/assets/js/event.js', array('jquery'), time(), true);
+    wp_enqueue_script('account-script', get_stylesheet_directory_uri() . '/account/account.js', array('jquery'), time(), true);
+	wp_localize_script('account-script', 'jaxsr',
+		array(
+			'url' => admin_url('admin-ajax.php'),
+		)
+	);
 	wp_localize_script('ajax-script', 'jaxsr',
 		array(
 			'url' => admin_url('admin-ajax.php'),
@@ -152,3 +161,8 @@ require get_theme_file_path('/export/functions/export.php');
  * functions filter hotel
  */
 require get_theme_file_path('/filter-hotel/filter-hotel.php');
+
+/**
+ * functions account
+ */
+require get_theme_file_path('/account/account.php');

@@ -119,7 +119,7 @@ jQuery(document).ready(function ($) {
     });
 
     // apply Hotel Filters
-    function applyHotelFilters() {
+    function applyHotelFilter() {
         // Fetch values from the context
         var event_id = $('.filter-hotel .event-id').val(),
         min_price =  $('.filter-hotel .min-price').val(),
