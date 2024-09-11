@@ -30,12 +30,15 @@ if (isset($_SERVER['HTTP_REFERER'])) {
                 <form id="login" action="login" method="post">
                     <input type="hidden" value="<?php echo $referring_url; ?>" class="referring-url">
                     <div class="box-field">
+                        <label for="">Nom d'utilisateur</label>
                         <input id="username" type="text" name="username" placeholder="Nom d'utilisateur" autocomplete="off" required>
                     </div>
                     <div class="box-field">
+                        <label for="">Mot de passe</label>
                         <input id="password" type="password" name="password" placeholder="Mot de passe" autocomplete="off" required>
                     </div>
-                    <a class="lost" href="<?php echo wp_lostpassword_url(); ?>">Mot de passe oublié ?</a>
+                    <!-- <a class="lost" href="<?php echo wp_lostpassword_url(); ?>">Mot de passe oublié ?</a> -->
+                    <a class="lost" href="<?php echo home_url('creer-un-compte'); ?>">Créer un compte ?</a>
                     <div class="message">Nom d'utilisateur ou mot de passe incorrect.</div>
                     <input class="submit_button" type="submit" value="Se connecter" name="submit">
                     <?php wp_nonce_field( 'ajax-login-nonce', 'security' ); ?>

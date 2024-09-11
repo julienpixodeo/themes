@@ -19,9 +19,9 @@
 .box-field {
     margin-bottom: 20px;
 }
-form#login {
-    max-width: 500px;
-    margin: 50px auto;
+form#login ,#register-client{
+    max-width: 600px;
+    margin: 40px auto 50px;
     padding: 30px 20px;
     border: 1px solid #dce0e0;
     border-radius: 5px;
@@ -29,6 +29,7 @@ form#login {
 .text-center{
     text-align: center !important;
 }
+#register-client .message,
 form#login .message{
     color: #fb0000;
     font-size: 11px;
