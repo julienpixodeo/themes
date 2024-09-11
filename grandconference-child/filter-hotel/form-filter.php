@@ -1,5 +1,6 @@
 <form action="" class="filter-hotel">
     <input type="hidden" class="event-id" value="<?php echo $event_id; ?>">
+    <input type="hidden" class="filter-change" value="0">
     <input type="hidden" class="woocommerce_currency" value="<?php echo get_woocommerce_currency_symbol(get_option('woocommerce_currency')); ?>">
     <div class="wrap-item-filter">
         <button class="show-filter"><span id="price-amount-btn">Prix</span><i class="fal fa-angle-down"></i></button>

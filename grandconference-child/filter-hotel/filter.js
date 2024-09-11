@@ -9,6 +9,7 @@ jQuery(document).ready(function ($) {
         slide: function(event, ui) {
             $("#price-amount").text(ui.values[0] + currency + " - " + ui.values[1] + currency);
             $("#price-amount-btn").text(ui.values[0] + currency + " - " + ui.values[1] + currency);
+            $('.filter-change').val(1);
             $(".min-price").val(ui.values[0]);
             $(".max-price").val(ui.values[1]);
         }
@@ -26,6 +27,7 @@ jQuery(document).ready(function ($) {
         slide: function(event, ui) {
             $("#address-amount").text(ui.values[0] + "Km - " + ui.values[1] + "Km");
             $("#address-amount-btn").text(ui.values[0] + "Km - " + ui.values[1] + "Km");
+            $('.filter-change').val(1);
             $(".min-distance").val(ui.values[0]);
             $(".max-distance").val(ui.values[1]);
         }
@@ -38,6 +40,7 @@ jQuery(document).ready(function ($) {
     $('.filter-hotel').on('change','#stars-select',function(e){  
         e.preventDefault();
         $("#btn-stars").text($(this).val()+" Stars");
+        $('.filter-change').val(1);
     }); 
 
     // show filter each
@@ -52,7 +55,9 @@ jQuery(document).ready(function ($) {
     $(document).on('click', function(event) {
         if (!$(event.target).closest('.wrap-item-filter').length) {
             $('.drop-filter').slideUp(100); // Hide all .drop-filter elements
-            applyHotelFilters();
+            if($('.filter-change').val() != 0){
+                applyHotelFilters();
+            }
         }
     });
     
@@ -60,7 +65,9 @@ jQuery(document).ready(function ($) {
     $('body').on('click','.apply-filter-each', function(event) {
         event.preventDefault();
         $('.drop-filter').slideUp(100);
-        applyHotelFilters();
+        if($('.filter-change').val() != 0){
+            applyHotelFilters();
+        }
     });
 
     // toggle show map
@@ -134,9 +141,14 @@ jQuery(document).ready(function ($) {
                 star: star,
             },
             success: function(response) {
-                $('.list-hotels-event').html(response.html);
                 $('.count-hotel').text(response.count +  " hotels");
-                initMap(response.locations);
+                $('.list-hotels-event').html(response.html);
+                if(response.status == true){
+                    initMap(response.locations);
+                }else{
+                    $('#list-hotel-map').html('')
+                }
+                $('.filter-change').val(0);
             },
             error: function(err) {
                 console.log(err);

@@ -145,41 +145,47 @@ function filter_hotel() {
         }
     }
 
-    // Sort hotels by price
-    usort($hotels, fn($a, $b) => $a['minPrice'] - $b['minPrice']);
+    if(!empty($hotels)){
+        // Sort hotels by price
+        usort($hotels, fn($a, $b) => $a['minPrice'] - $b['minPrice']);
 
-    // Display hotels
-    foreach ($hotels as $hotel) {
-        ?>
-        <div class="item-hotels">
-            <a href="<?= esc_url($hotel['url']) ?>" <?= esc_attr($hotel['attr']) ?>>
-                <img src="<?= esc_url($hotel['featured_img_url']); ?>" alt="" class="thumbnail">
-            </a>
-            <div class="wrap-title-rating">
-                <a href="<?= esc_url($hotel['url']) ?>" <?= esc_attr($hotel['attr']) ?> class="title"><?= esc_html(get_the_title($hotel['hotel_id'])); ?></a>
-                <div class="review-hotel">
-                    <div class="list-star">
-                        <?= generateStars($hotel['hotel_stars']); ?>
+        // Display hotels
+        foreach ($hotels as $hotel) {
+            ?>
+            <div class="item-hotels">
+                <a href="<?= esc_url($hotel['url']) ?>" <?= esc_attr($hotel['attr']) ?>>
+                    <img src="<?= esc_url($hotel['featured_img_url']); ?>" alt="" class="thumbnail">
+                </a>
+                <div class="wrap-title-rating">
+                    <a href="<?= esc_url($hotel['url']) ?>" <?= esc_attr($hotel['attr']) ?> class="title"><?= esc_html(get_the_title($hotel['hotel_id'])); ?></a>
+                    <div class="review-hotel">
+                        <div class="list-star">
+                            <?= generateStars($hotel['hotel_stars']); ?>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="infor">
-                <?php if (!empty($hotel['address']['address'])) { ?>
-                    <span><?= esc_html($hotel['address']['address']); ?></span>
+                <div class="infor">
+                    <?php if (!empty($hotel['address']['address'])) { ?>
+                        <span><?= esc_html($hotel['address']['address']); ?></span>
+                    <?php } ?>
+                </div>
+                <?php if ($hotel['minPrice'] > 0) { ?>
+                    <h3 class="price">
+                        <?= esc_html($from) . " " . esc_html($hotel['minPrice']) . get_woocommerce_currency_symbol(get_option('woocommerce_currency')); ?>
+                    </h3>
                 <?php } ?>
             </div>
-            <?php if ($hotel['minPrice'] > 0) { ?>
-                <h3 class="price">
-                    <?= esc_html($from) . " " . esc_html($hotel['minPrice']) . get_woocommerce_currency_symbol(get_option('woocommerce_currency')); ?>
-                </h3>
-            <?php } ?>
-        </div>
-        <?php
+            <?php
+        }
+        $status = true;
+        // Capture and return HTML output
+        $html = ob_get_clean();
+    }else{
+        $status = false;
+        $html = "Aucun résultat";
     }
-
-    // Capture and return HTML output
-    $html = ob_get_clean();
-    wp_send_json(['html' => $html, 'count' => count($hotels), 'locations' => $locations]);
+    
+    wp_send_json(['html' => $html, 'count' => count($hotels), 'locations' => $locations, 'status' => $status]);
 }
 add_action('wp_ajax_filter_hotel', 'filter_hotel');
 add_action('wp_ajax_nopriv_filter_hotel', 'filter_hotel');

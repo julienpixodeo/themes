@@ -587,4 +587,7 @@ body #stars-select {
     #list-hotel-map {
         height: 400px;
     }
+    .list-hotels-event {
+        min-height: unset;
+    }
 }
