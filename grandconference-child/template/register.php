@@ -23,6 +23,7 @@ get_header();
 		<div class="inner_wrapper">
 			<div class="sidebar_content full_width">
                 <form id="register-client" action="register-client" method="post">
+					<input type="hidden" class="url-comple" value="<?php echo home_url('compte'); ?>">
 					<div class="box-field">
 						<label for="">Prénom</label>
 						<input id="first_name" type="text" name="first_name" placeholder="Prénom" autocomplete="off" required>

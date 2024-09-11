@@ -29,6 +29,7 @@ form#login ,#register-client{
 .text-center{
     text-align: center !important;
 }
+#edit-client .message,
 #register-client .message,
 form#login .message{
     color: #fb0000;

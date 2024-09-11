@@ -73,6 +73,40 @@ jQuery(function($){
             form.submit();
         }
     });
+
+    // validate
+    $("#edit-client").validate({
+        rules: {
+            first_name: {
+                required: true
+            },
+            last_name: {
+                required: true
+            },
+            email: {
+                required: true,
+                email: true
+            }
+        },
+        messages: {
+            first_name: {
+                required: "Ce champ est obligatoire.",
+            },
+            last_name: {
+                required: "Ce champ est obligatoire.",
+            },
+            email: {
+                required: "Ce champ est obligatoire.",
+                email: "Veuillez entrer une adresse email valide."
+            }
+        },
+        errorPlacement: function(error, element) {
+            error.insertAfter(element);
+        },
+        submitHandler: function(form) {
+            form.submit();
+        }
+    });
     
     // js ajax login
     $('form#login').on('click','.submit_button',function(e){ 
@@ -124,7 +158,7 @@ jQuery(function($){
                     if(response.data == true){
                         $('form#register-client .message').text('Compte créé avec succès');
                         $('form#register-client .message').css('color','#008000');
-                        location.reload();
+                        window.location.href = $('.url-comple').val();
                     }else{
                         $('form#register-client .message').html(response.data);
                     }
@@ -134,4 +168,39 @@ jQuery(function($){
             });
         }
     });
+
+    // js ajax edit client 
+    $('form#edit-client').on('click', '.submit_button', function(e){  
+        e.preventDefault();
+        var formStatus = $('form#edit-client').validate().form(); // Ensure you have validation set up
+        $('form#edit-client .message').hide();
+        if (formStatus) {
+            $("body").addClass("ajax-load");
+            $.ajax({
+                url: jaxsr.url,
+                type: 'POST',
+                data: {
+                    'action': 'EditClient',
+                    'email': $('form#edit-client #email').val(),
+                    'password': $('form#edit-client #password').val(),
+                    'password_confirm': $('form#edit-client #password_confirm').val(),
+                    'first_name': $('form#edit-client #first_name').val(),
+                    'last_name': $('form#edit-client #last_name').val(),
+                    'edit_client_nonce': $('#edit_client_nonce').val() // Include nonce
+                },
+                success: function(response){
+                    if (response.data === true) {
+                        $('form#edit-client .message').text('Information mise à jour avec succès');
+                        $('form#edit-client .message').css('color','#008000');
+                        window.location.href = $('.url-login').val();
+                    } else {
+                        $('form#edit-client .message').html(response.data);
+                    }
+                    $('form#edit-client .message').show();
+                    $("body").removeClass("ajax-load");
+                }
+            });
+        }
+    });
+    
 });
