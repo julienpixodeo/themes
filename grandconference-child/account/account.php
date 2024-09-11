@@ -70,7 +70,7 @@ add_action('wp_ajax_nopriv_RegisterClient', 'RegisterClient');
 // ajax edit client
 function EditClient() {
     check_ajax_referer('edit_client_action', 'edit_client_nonce'); // Check nonce
-
+    $pw = false;
     $user_id = get_current_user_id(); // Get the current user ID
     if (!$user_id) {
         wp_send_json(array('data' => 'Utilisateur non connecté'));
@@ -107,15 +107,13 @@ function EditClient() {
     if (!empty($password)) {
         if ($password === $password_confirm) {
             wp_set_password($password, $user_id);
-        } else {
-            wp_send_json(array('data' => 'Les mots de passe ne correspondent pas'));
-            return;
+            $pw = true;
         }
     }
 
-    wp_send_json(array('data' => true));
+    wp_send_json(array('data' => true,'pw' => $pw));
 }
 add_action('wp_ajax_EditClient', 'EditClient');
-add_action('wp_ajax_nopriv_EditClient', 'EditClient'); // Not needed unless you allow non-logged-in users to edit
+add_action('wp_ajax_nopriv_EditClient', 'EditClient');
 
 ?>

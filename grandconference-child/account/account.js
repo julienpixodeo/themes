@@ -86,6 +86,13 @@ jQuery(function($){
             email: {
                 required: true,
                 email: true
+            },
+            password: {
+                minlength: 8
+            },
+            password_confirm: {
+                minlength: 8,
+                equalTo: "#password" // Ensures the confirmation matches the password
             }
         },
         messages: {
@@ -98,6 +105,13 @@ jQuery(function($){
             email: {
                 required: "Ce champ est obligatoire.",
                 email: "Veuillez entrer une adresse email valide."
+            },
+            password: {
+                minlength: "Votre mot de passe doit contenir au moins 8 caractères."
+            },
+            password_confirm: {
+                minlength: "Votre mot de passe doit contenir au moins 8 caractères.",
+                equalTo: "Les mots de passe ne correspondent pas."
             }
         },
         errorPlacement: function(error, element) {
@@ -192,7 +206,9 @@ jQuery(function($){
                     if (response.data === true) {
                         $('form#edit-client .message').text('Information mise à jour avec succès');
                         $('form#edit-client .message').css('color','#008000');
-                        window.location.href = $('.url-login').val();
+                        if(response.pw == true){
+                            window.location.href = $('.url-login').val();
+                        } 
                     } else {
                         $('form#edit-client .message').html(response.data);
                     }
