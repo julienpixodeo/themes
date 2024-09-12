@@ -29,7 +29,7 @@ get_header();
                     <div class="sidebar-account">
                         <ul>
                             <li class="active"><a href="<?php echo get_permalink(); ?>"><?php echo get_the_title(); ?></a></li>
-                            <li><a href="">Commande</a></li>
+                            <li><a href="<?php echo home_url('commande'); ?>">Commande</a></li>
                         </ul>
                     </div>
                     <form id="edit-client" action="edit-client" method="post">

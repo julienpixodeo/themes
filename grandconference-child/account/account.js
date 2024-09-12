@@ -218,5 +218,51 @@ jQuery(function($){
             });
         }
     });
+
+    // refund order
+    $('body').on('click','.refund-button', function() {
+        var order_id = $(this).data('order-id');
+        var messageBox = $('#message-' + order_id);
+        $("body").addClass("ajax-load");
+        $.ajax({
+            url: jaxsr.url,
+            type: 'POST',
+            data: {
+                action: 'process_ajax_refund',
+                order_id: order_id,
+            },
+            success: function(response) {
+                $("body").removeClass("ajax-load");
+                if (response.success) {
+                    messageBox.removeClass('error').addClass('success');
+                    messageBox.text('Refund processed successfully!');
+                } else {
+                    messageBox.removeClass('success').addClass('error');
+                    messageBox.text('Refund failed: ' + response.data);
+                }
+
+                // Show the message
+                messageBox.slideDown();
+
+                // Hide the message after 5 seconds
+                setTimeout(function() {
+                    messageBox.slideUp();
+                }, 5000);
+            },
+            error: function() {
+                $("body").removeClass("ajax-load");
+                messageBox.removeClass('success').addClass('error');
+                messageBox.text('An error occurred. Please try again.');
+
+                // Show the message
+                messageBox.slideDown();
+
+                // Hide the message after 5 seconds
+                setTimeout(function() {
+                    messageBox.slideUp();
+                }, 5000);
+            }
+        });
+    });
     
 });

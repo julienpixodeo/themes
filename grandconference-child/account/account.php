@@ -116,4 +116,122 @@ function EditClient() {
 add_action('wp_ajax_EditClient', 'EditClient');
 add_action('wp_ajax_nopriv_EditClient', 'EditClient');
 
+// get user orders info
+function get_user_orders_info() {
+    $user_id = get_current_user_id();
+
+    if ($user_id) {
+        $args = array(
+            'customer_id' => $user_id,
+            'status'      => 'any',
+            'limit'       => -1,
+        );
+
+        $orders = wc_get_orders($args);
+
+        ob_start();
+
+        if($orders){
+            // Loop through each order
+            foreach ($orders as $order) {
+                $order_id = $order->get_id();
+                $order_date = $order->get_date_created();
+                $order_status = $order->get_status();
+                $order_total = $order->get_total();
+                $order_currency = $order->get_currency();
+                $order_payment_method = $order->get_payment_method_title();
+
+                echo '<div class="order-box" id="order-' . $order_id . '">';
+                echo '<div class="order-header">Order ID: ' . $order_id . '</div>';
+                echo '<div class="order-details">';
+                echo 'Order Date: ' . $order_date->date('Y-m-d H:i:s') . '<br>';
+                echo 'Order Status: ' . ucfirst($order_status) . '<br>';
+                echo 'Order Total: ' . $order_total . ' ' . $order_currency . '<br>';
+                echo 'Payment Method: ' . $order_payment_method . '<br>';
+                echo '</div>';
+
+                $items = $order->get_items();
+
+                echo '<div class="order-items">';
+                echo '<h4>Order Items:</h4>';
+                foreach ($items as $item) {
+                    $product = $item->get_product();
+                    $product_name = $item->get_name();
+                    $product_quantity = $item->get_quantity();
+                    $product_total_incl_tax = $item->get_total() + $item->get_total_tax();
+                    $product_id = $product->get_id();
+                    $product_sku = $product->get_sku();
+
+                    echo '<div class="product-item">';
+                    echo '<span class="product-name">Product Name: ' . $product_name . '</span>';
+                    echo 'Product ID: ' . $product_id . '<br>';
+                    echo 'Product SKU: ' . $product_sku . '<br>';
+                    echo 'Quantity: ' . $product_quantity . '<br>';
+                    echo 'Total Price (Incl. Tax): ' . wc_price($product_total_incl_tax) . '<br>';
+                    echo '</div>';
+                }
+                echo '</div>'; // End of order items
+
+                // Add refund button and message box for each order
+                if ($order_status == 'completed') {
+                    echo '<button class="refund-button" data-order-id="' . $order_id . '">Request Refund</button>';
+                    echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                }
+
+                echo '</div>'; // End of order box
+            }
+            return ob_get_clean();
+        }else{
+            return 'Vous n\'avez pas encore de commandes.';
+        }  
+    } else {
+        return 'Utilisateur non connecté.';
+    }
+}
+
+// Register shortcode to display user orders
+function register_user_orders_shortcode() {
+    add_shortcode('user_orders', 'get_user_orders_info');
+}
+add_action('init', 'register_user_orders_shortcode');
+
+// process ajax refund
+function process_ajax_refund() {
+    // Check if the current user is logged in and if the order ID is passed
+    if (is_user_logged_in() && isset($_POST['order_id'])) {
+        $order_id = intval($_POST['order_id']);
+        $order = wc_get_order($order_id);
+
+        // Ensure the order exists and belongs to the current user
+        if ($order && $order->get_user_id() === get_current_user_id()) {
+            // Refund reason (optional)
+            $refund_reason = 'Refund requested by customer';
+
+            // Get the total amount of the order
+            $refund_amount = $order->get_total();
+
+            // Create a refund
+            $refund = wc_create_refund(array(
+                'amount'     => $refund_amount,
+                'reason'     => $refund_reason,
+                'order_id'   => $order_id,
+                'line_items' => array(), // Empty array refunds the entire order
+            ));
+
+            if (is_wp_error($refund)) {
+                // Refund failed, return an error
+                wp_send_json_error($refund->get_error_message());
+            } else {
+                // Refund successful
+                wp_send_json_success('Refund processed successfully');
+            }
+        } else {
+            wp_send_json_error('Invalid order or permission denied');
+        }
+    } else {
+        wp_send_json_error('User not logged in or missing order ID');
+    }
+}
+add_action( 'wp_ajax_process_ajax_refund', 'process_ajax_refund' );
+add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
 ?>
