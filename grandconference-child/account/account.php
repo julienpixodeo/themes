@@ -230,7 +230,7 @@ function process_ajax_refund() {
             // Get the total amount of the order
             $refund_amount = $order->get_total();
 
-            // Create a refund
+            //Create a refund
             $refund = wc_create_refund(array(
                 'amount'     => $refund_amount,
                 'reason'     => $refund_reason,
@@ -242,7 +242,7 @@ function process_ajax_refund() {
                 wp_send_json_error($refund->get_error_message());
             } else {
                 systempay_online_refund($order->get_id(), $refund->get_id());
-                wp_send_json_success('Refund processed successfully'); 
+                wp_send_json_success('Refund successfully'); 
             }
         } else {
             wp_send_json_error('Invalid order or permission denied');

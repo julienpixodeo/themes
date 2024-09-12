@@ -247,7 +247,8 @@ jQuery(function($){
                 // Hide the message after 5 seconds
                 setTimeout(function() {
                     messageBox.slideUp();
-                }, 5000);
+                }, 3000);
+                location.reload();
             },
             error: function() {
                 $("body").removeClass("ajax-load");
@@ -260,7 +261,7 @@ jQuery(function($){
                 // Hide the message after 5 seconds
                 setTimeout(function() {
                     messageBox.slideUp();
-                }, 5000);
+                }, 3000);
             }
         });
     });
