@@ -227,7 +227,8 @@ function process_ajax_refund() {
                 wp_send_json_error($refund->get_error_message());
             } else {
                 // Refund successful
-                wp_send_json_success('Refund processed successfully');
+                systempay_online_refund($order->get_id(), $refund->get_id());
+                wp_send_json_success('Refund processed successfully'); 
             }
         } else {
             wp_send_json_error('Invalid order or permission denied');
