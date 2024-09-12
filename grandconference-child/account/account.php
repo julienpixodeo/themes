@@ -215,18 +215,12 @@ function process_ajax_refund() {
                 'amount'     => $refund_amount,
                 'reason'     => $refund_reason,
                 'order_id'   => $order_id,
-                'line_items' => array(), // Empty array refunds the entire order
+                'line_items' => array(), 
             ));
 
-            // var_dump($refund->get_id()); die();
-            // systempay_online_refund
-            // do_action( 'woocommerce_order_refunded', $order->get_id(), $refund->get_id() );
-
             if (is_wp_error($refund)) {
-                // Refund failed, return an error
                 wp_send_json_error($refund->get_error_message());
             } else {
-                // Refund successful
                 systempay_online_refund($order->get_id(), $refund->get_id());
                 wp_send_json_success('Refund processed successfully'); 
             }
