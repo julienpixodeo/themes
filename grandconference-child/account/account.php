@@ -142,18 +142,18 @@ function get_user_orders_info() {
                 $order_payment_method = $order->get_payment_method_title();
 
                 echo '<div class="order-box" id="order-' . $order_id . '">';
-                echo '<div class="order-header"><h4>Order ID: ' . $order_id . '</h4></div>';
+                echo '<div class="order-header"><h4>ID de commande: ' . $order_id . '</h4></div>';
                 echo '<div class="order-details">';
-                echo 'Order Date: ' . $order_date->date('Y-m-d H:i:s') . '<br>';
-                echo 'Order Status: ' . ucfirst($order_status) . '<br>';
-                echo 'Order Total: ' . wc_price($order_total) . '<br>';
-                echo 'Payment Method: ' . $order_payment_method . '<br>';
+                echo 'Date de commande: ' . $order_date->date('Y-m-d H:i:s') . '<br>';
+                echo 'Statut de la commande: ' . ucfirst($order_status) . '<br>';
+                echo 'Total de la commande: ' . wc_price($order_total) . '<br>';
+                echo 'Mode de paiement: ' . $order_payment_method . '<br>';
                 echo '</div>';
 
                 $items = $order->get_items();
 
                 echo '<div class="order-items">';
-                echo '<h4>Order Items:</h4>';
+                echo '<h4>Commander des articles:</h4>';
                 foreach ($items as $item) {
                     $product = $item->get_product();
                     $product_name = $item->get_name();
@@ -162,7 +162,7 @@ function get_user_orders_info() {
                     $product_id = $product->get_id();
                     $product_sku = $product->get_sku();
                     $phn_type_product = get_post_meta($product_id,'phn_type_product',true);
-                    $type = ($phn_type_product === 'event') ? 'Event' : 'Hotel';
+                    $type = ($phn_type_product === 'event') ? 'Événement' : 'Hôtel';
 
                     $parent_id = wp_get_post_parent_id($product_id);
                     if($parent_id != 0){
@@ -185,8 +185,8 @@ function get_user_orders_info() {
                     echo '<img width="300" height="300" src="'.$thumbnail_url.'" class="image-product">';
                     echo '<div class="product-item-content">';
                     echo '<span class="product-name">'.$type.' : ' . $product_name . '</span>';
-                    echo '<div>Quantity: ' . $product_quantity . '</div>';
-                    echo '<div class="wrap-price">Price: ' . wc_price($product_total_incl_tax) . '</div>';
+                    echo '<div>Quantité: ' . $product_quantity . '</div>';
+                    echo '<div class="wrap-price">Prix: ' . wc_price($product_total_incl_tax) . '</div>';
                     echo '</div>';
                     echo '</div>';
                 }
@@ -194,7 +194,7 @@ function get_user_orders_info() {
 
                 // Add refund button and message box for each order
                 if ($order_status == 'completed') {
-                    echo '<button class="refund-button" data-order-id="' . $order_id . '">Refund</button>';
+                    echo '<button class="refund-button" data-order-id="' . $order_id . '">Remboursement</button>';
                     echo '<div class="message-box" id="message-' . $order_id . '"></div>';
                 }
 

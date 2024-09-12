@@ -235,10 +235,10 @@ jQuery(function($){
                 $("body").removeClass("ajax-load");
                 if (response.success) {
                     messageBox.removeClass('error').addClass('success');
-                    messageBox.text('Refund processed successfully!');
+                    messageBox.text('Remboursement traité avec succès !');
                 } else {
                     messageBox.removeClass('success').addClass('error');
-                    messageBox.text('Refund failed: ' + response.data);
+                    messageBox.text('Le remboursement a échoué: ' + response.data);
                 }
 
                 // Show the message
@@ -253,7 +253,7 @@ jQuery(function($){
             error: function() {
                 $("body").removeClass("ajax-load");
                 messageBox.removeClass('success').addClass('error');
-                messageBox.text('An error occurred. Please try again.');
+                messageBox.text('Une erreur s\'est produite. Veuillez réessayer.');
 
                 // Show the message
                 messageBox.slideDown();
