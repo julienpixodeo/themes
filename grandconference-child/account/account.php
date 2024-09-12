@@ -218,6 +218,9 @@ function process_ajax_refund() {
                 'line_items' => array(), // Empty array refunds the entire order
             ));
 
+            // var_dump($refund->get_id()); die();
+            // systempay_online_refund
+
             if (is_wp_error($refund)) {
                 // Refund failed, return an error
                 wp_send_json_error($refund->get_error_message());
