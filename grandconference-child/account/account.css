@@ -75,17 +75,22 @@ form#edit-client,.wrap-list-order {
     width: 75%;
 }
 .wrap-list-order .order-box {
-    border: 1px solid #ddd;
+    border: 1px solid #dce0e0;
     padding: 15px;
     margin-bottom: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
+    background-color: #ffffff;
 }
-.wrap-list-order .order-header {
+.wrap-list-order .order-header h4{
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 10px;
-    color: #333;
+    color: #FF2D55;
+}
+.wrap-list-order .product-name{
+    color: #FF2D55;
+    line-height: 13px;
+    display: block;
+    margin-bottom: 5px;
 }
 .wrap-list-order .order-details {
     margin-bottom: 15px;
@@ -96,29 +101,45 @@ form#edit-client,.wrap-list-order {
 .wrap-list-order .order-items h4 {
     font-size: 16px;
     margin-bottom: 10px;
+    color: #FF2D55
 }
 .wrap-list-order .product-item {
     padding: 10px;
-    border: 1px solid #eee;
+    border: 1px solid #dce0e0;
     margin-bottom: 10px;
-    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
 }
-.wrap-list-order .product-item span {
-    display: block;
+.wrap-list-order .image-product {
+    width: 100px;
+    height: auto !important;
+    margin-right: 15px;
+    object-fit: contain;
 }
-.wrap-list-order .product-name {
-    font-weight: bold;
+
+.wrap-list-order .product-item-content {
+    width: calc(100% - 115px);
+}
+
+.wrap-list-order .woocommerce-Price-amount.amount {
+    margin-left: 5px;
+}
+.wrap-list-order .wrap-price{
+    display: flex;
 }
 .wrap-list-order .refund-button {
     display: inline-block;
     margin-top: 10px;
     padding: 10px 15px;
-    background-color: #ff0000;
+    background-color: #FF2D55;
     color: #fff;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
+    border: none;
+    outline: none;
 }
 .wrap-list-order .message-box {
     display: none;
