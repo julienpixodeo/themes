@@ -220,6 +220,7 @@ function process_ajax_refund() {
 
             // var_dump($refund->get_id()); die();
             // systempay_online_refund
+            // do_action( 'woocommerce_order_refunded', $order->get_id(), $refund->get_id() );
 
             if (is_wp_error($refund)) {
                 // Refund failed, return an error
