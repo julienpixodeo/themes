@@ -397,9 +397,9 @@ function update_stock_each_day_variation_hotel_of_event($order_id) {
                             echo $stock_day_data[$variation_id][$timestamp];
                             $date_available['stock'] -= $stock_day_data[$variation_id][$timestamp];
                             // Remove date_available if stock becomes zero
-                            if ($date_available['stock'] <= 0) {
-                                unset($variation['date_available'][$key]);
-                            }
+                            // if ($date_available['stock'] <= 0) {
+                            //     unset($variation['date_available'][$key]);
+                            // }
                         }
                     }
                     // Re-index the array to maintain numeric keys

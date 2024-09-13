@@ -241,7 +241,8 @@ function process_ajax_refund() {
             if (is_wp_error($refund)) {
                 wp_send_json_error($refund->get_error_message());
             } else {
-                systempay_online_refund($order->get_id(), $refund->get_id());
+                // systempay_online_refund($order->get_id(), $refund->get_id());
+                update_stock_each_day_variation_hotel_and_stock_event($order);
                 wp_send_json_success('Refund successfully'); 
             }
         } else {
@@ -253,4 +254,63 @@ function process_ajax_refund() {
 }
 add_action( 'wp_ajax_process_ajax_refund', 'process_ajax_refund' );
 add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
+
+// update stock each day variation hotel and stock event
+function update_stock_each_day_variation_hotel_and_stock_event($order) {
+    $stock_day = [];
+    $stock_day_data = [];
+    
+    foreach ( $order->get_items() as $item_id => $item ) {
+        $variation_id = $item->get_variation_id();
+        $product_id = $item['product_id'];
+        $event_id = (int)get_post_meta($item['product_id'] , 'events_of_product' , true);
+        if ($event_id != 0) {
+            $number_tickets = get_post_meta( $event_id, 'number_tickets', true );
+            $new_number_tickets = $number_tickets + $item['quantity'];
+            update_post_meta( $event_id, 'number_tickets', $new_number_tickets ); 
+            $product_id = get_post_meta($event_id, 'product_of_events', true);
+            update_post_meta( $product_id, '_stock', $new_number_tickets ); 
+        }
+
+        if($variation_id != 0){
+            $quantity = $item->get_quantity();
+            $start_day_st = $item->get_meta( 'start_day_st', true );
+            $end_day_st = $item->get_meta( 'end_day_st', true );
+            $quantity_each_day = quantity_each_day($start_day_st,$end_day_st,$quantity);
+            $stock_day[] = [
+                $variation_id => $quantity_each_day
+            ];
+        }
+    }
+
+    if(!empty($stock_day)){
+        $stock_day_data = mergeArray($stock_day);
+    }
+
+    session_start();
+    
+    if($event_id == 0 || $event_id == ''){
+        $event_id = $_SESSION['event_id'];
+    }
+    $data_hotel_event = get_post_meta($event_id, 'data_hotel_event', true);
+
+    if($data_hotel_event){
+        foreach ($data_hotel_event as &$hotel) {
+            foreach ($hotel['variations_data'] as &$variation) {
+                $variation_id = $variation['variations_id'];
+                if (isset($stock_day_data[$variation_id])) {
+                    foreach ($variation['date_available'] as $key => &$date_available) {
+                        $timestamp = $date_available['date'];
+                        if (isset($stock_day_data[$variation_id][$timestamp])) {
+                            $date_available['stock'] += $stock_day_data[$variation_id][$timestamp];
+                        }
+                    }
+                    // Re-index the array to maintain numeric keys
+                    $variation['date_available'] = array_values($variation['date_available']);
+                }
+            }
+        }        
+    }
+    update_post_meta($event_id, 'data_hotel_event', $data_hotel_event);
+}
 ?>
