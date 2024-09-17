@@ -112,14 +112,14 @@ form#edit-client,.wrap-list-order {
     align-items: flex-start;
 }
 .wrap-list-order .image-product {
-    width: 100px;
+    width: 155px;
     height: auto !important;
     margin-right: 15px;
     object-fit: contain;
 }
 
 .wrap-list-order .product-item-content {
-    width: calc(100% - 115px);
+    width: calc(100% - 170px);
 }
 
 .wrap-list-order .woocommerce-Price-amount.amount {

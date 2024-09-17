@@ -154,7 +154,7 @@ function get_user_orders_info() {
 
                 echo '<div class="order-items">';
                 echo '<h4>Commander des articles:</h4>';
-                foreach ($items as $item) {
+                foreach ($items as $item_id => $item) {
                     $product = $item->get_product();
                     $product_name = $item->get_name();
                     $product_quantity = $item->get_quantity();
@@ -187,13 +187,21 @@ function get_user_orders_info() {
                     echo '<span class="product-name">'.$type.' : ' . $product_name . '</span>';
                     echo '<div>Quantité: ' . $product_quantity . '</div>';
                     echo '<div class="wrap-price">Prix: ' . wc_price($product_total_incl_tax) . '</div>';
+                    if ($order_status === 'completed' && count($items) != 1) {
+                        echo '<button class="refund-button" data-order-id="' . $order_id . '" 
+                        data-order-item="' . $item_id . '"
+                        data-order-price="' . round($product_total_incl_tax) . '">
+                        Remboursement
+                        </button>';
+                        echo '<div class="message-box" id="message-' . $item_id . '"></div>';
+                    }
                     echo '</div>';
                     echo '</div>';
                 }
                 echo '</div>'; // End of order items
 
                 // Add refund button and message box for each order
-                if ($order_status == 'completed') {
+                if ($order_status === 'completed' && count($items) === 1) {
                     echo '<button class="refund-button" data-order-id="' . $order_id . '">Remboursement</button>';
                     echo '<div class="message-box" id="message-' . $order_id . '"></div>';
                 }
