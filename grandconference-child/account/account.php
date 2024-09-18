@@ -116,6 +116,123 @@ function EditClient() {
 add_action('wp_ajax_EditClient', 'EditClient');
 add_action('wp_ajax_nopriv_EditClient', 'EditClient');
 
+// check event in order
+function event_true($order_id){
+    $order = wc_get_order( $order_id );
+    foreach ( $order->get_items() as $item_id => $item ) {
+        $product_id = $item->get_product_id();
+        $type = get_post_meta($product_id, 'phn_type_product', true);
+        if ($type === 'event') {
+            return false;
+        }
+    }
+    return true;
+}
+
+// get id hotel of product
+function get_id_hotel($order_id){
+    $order = wc_get_order( $order_id );
+    foreach ( $order->get_items() as $item_id => $item ) {
+        $product_id = $item->get_product_id();
+        $hotels_of_product  = get_post_meta($product_id, 'hotels_of_product', true);
+    }
+    return $hotels_of_product;
+}
+
+// get variation id hotel of product
+function get_variation_id_hotel($order_id){
+    $order = wc_get_order( $order_id );
+    foreach ( $order->get_items() as $item_id => $item ) {
+        $variation_id = $item->get_variation_id();
+    }
+    return $variation_id;
+}
+
+// get date refund hotel
+function get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel){
+    $data_hotel_event = get_post_meta($event_id, 'data_hotel_event', true);
+    if($data_hotel_event){
+        foreach($data_hotel_event as $key => $value){
+            if($value['hotel_id'] == $id_hotel){
+                $variations_data = $value['variations_data'];
+                break;
+            }
+        }
+    }
+    $date_refund = isset($variations_data[0]['date']) ? $variations_data[0]['date'] : '';
+    $date_refund_timestamp  = '';
+    if($date_refund){
+        $date = DateTime::createFromFormat('Y-m-d', $date_refund);
+        $date_refund_timestamp = $date->getTimestamp();
+    }
+    return $date_refund_timestamp;
+}
+
+// check show refund all
+function check_show_refund_all($order_id){
+    $order = wc_get_order( $order_id );
+    $event_id  = get_post_meta( $order_id, 'event_id_order', true );
+    foreach ( $order->get_items() as $item_id => $item ) {
+        $variation_id = $item->get_variation_id();
+        $current  = time();
+        $product_id = $item->get_product_id();
+        $type = get_post_meta($product_id, 'phn_type_product', true);
+        if($type === "event"){
+            $date_refund = get_field('date_refund',$event_id);
+            if($date_refund){
+                $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                $date_refund_timestamp = $date->getTimestamp();
+            }
+        }else{
+            $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
+            $variation_id_hotel = $item->get_variation_id();
+            $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+        }
+
+        if($date_refund_timestamp > $current){
+            return true;
+        } 
+    }
+    return false;
+}
+
+// get refund amount
+function get_refund_amount($order_id){
+    $order = wc_get_order( $order_id );
+    $item_count = count($order->get_items());
+    if($item_count == 1){
+        $refund_amount = $order->get_total();
+    }else{
+        $refund_amount = 0;
+        $event_id  = get_post_meta( $order_id, 'event_id_order', true );
+        foreach ( $order->get_items() as $item_id => $item ) {
+            $meta_data = $item->get_meta_data();
+            $variation_id = $item->get_variation_id();
+            $current  = time();
+            $product_id = $item->get_product_id();
+            $type = get_post_meta($product_id, 'phn_type_product', true);
+            if($type === "event"){
+                $date_refund = get_field('date_refund',$event_id);
+                if($date_refund){
+                    $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                    $date_refund_timestamp = $date->getTimestamp();
+                }
+            }else{
+                $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
+                $variation_id_hotel = $item->get_variation_id();
+                $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+            }
+           
+            if($date_refund_timestamp > $current && status_item_order($meta_data) == true){
+                $product_total_incl_tax = $item->get_total() + $item->get_total_tax();
+                $refund_amount += $product_total_incl_tax;
+            } 
+        }
+        $refund_amount = round($refund_amount);
+    }
+    return $refund_amount;
+}
+
 // get user orders info
 function get_user_orders_info() {
     $user_id = get_current_user_id();
@@ -155,14 +272,8 @@ function get_user_orders_info() {
                 echo '<div class="order-items">';
                 echo '<h4>Commander des articles:</h4>';
 
-                foreach ($order->get_items() as $item_id => $item) {
-                    $variation_id = $item->get_variation_id();
-                    if ($variation_id == 0) {
-                        $product_id = $item->get_product_id();
-                        $event_id = (int) get_post_meta($product_id, 'events_of_product', true);
-                        break; // Exit the loop once you find the event ID
-                    }
-                }
+                // Add refund button and message box for each order
+                $event_id  = get_post_meta( $order_id, 'event_id_order', true );
 
                 foreach ($items as $item_id => $item) {
                     $product = $item->get_product();
@@ -214,9 +325,24 @@ function get_user_orders_info() {
                             }
                         }
                     }
+
+                    $type = get_post_meta($product_id, 'phn_type_product', true);
+                    $product_id = $item->get_product_id();
+                    $current  = time();
+                    if($type === "event"){
+                        $date_refund = get_field('date_refund',$event_id);
+                        if($date_refund){
+                            $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                            $date_refund_timestamp = $date->getTimestamp();
+                        }
+                    }else{
+                        $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
+                        $variation_id_hotel = $item->get_variation_id();
+                        $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+                    }
                
                     // if ($order_status === 'completed' && count($items) != 1) {
-                    if (count($items) != 1 && status_item_order($meta_data) == true) {
+                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded') {
                         echo '<button class="refund-button" data-order-id="' . $order_id . '" 
                         data-message-id="' . $item_id . '" 
                         data-order-item="' . $item_id . '"
@@ -230,33 +356,32 @@ function get_user_orders_info() {
                 }
                 echo '</div>'; // End of order items
 
-                // Add refund button and message box for each order
                 // if ($order_status === 'completed' && count($items) === 1) {
                 if ($order_status !== 'refunded') {
                     if (count($items) === 1) {
-                        echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Remboursement</button>';
-                        echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                        if(event_true($order_id) == false){
+                            $date_refund = get_field('date_refund',$event_id);
+                            if($date_refund){
+                                $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                                $date_refund_timestamp = $date->getTimestamp();
+                            }
+                        }else{
+                            $id_hotel =  get_id_hotel($order_id);
+                            $variation_id_hotel = get_variation_id_hotel($order_id);
+                            $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+                        }
+                        $current  = time();
+                        if($date_refund_timestamp > $current){
+                            echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Remboursement</button>';
+                            echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                        }
                     }else{
-                        echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Rembourser tout</button>';
-                        echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                        if(check_show_refund_all($order_id) == true){
+                            echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Rembourser tout</button>';
+                            echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                        }
                     }
                 }
-
-                if (!isset($event_id)) {
-                    $event_id  = get_post_meta( $order_id, 'event_id_of_hotel', true );
-                }
-                echo $event_id."<br>";
-
-                echo get_field('date_refund',$event_id)."<br>";
-
-                $date = DateTime::createFromFormat('d/m/Y', get_field('date_refund',$event_id));
-                $timestamp = $date->getTimestamp();
-
-                echo "timestamp: ".$timestamp."<br>";
-
-                $current  = time();
-
-                echo 'current: '.$current ;
 
                 echo '</div>'; // End of order box
             }
@@ -317,7 +442,7 @@ function process_ajax_refund() {
 
         if($status == true){
             if(empty($order_item)){
-                $refund_amount = $order->get_total();
+                $refund_amount = get_refund_amount($order_id);
                 $reason = 'Refund for Order #' . $order_id;
             }else{
                 $refund_amount = $order_price;
@@ -374,11 +499,40 @@ function add_status_refund_item_order($order,$order_item){
                 $item->save();
             }
         }else{
-             // Add metadata to the item.
-             $item->add_meta_data( 'Status', 'Refund', true );
+            $item_count = count($order->get_items());
+            if($item_count == 1){
+                // Add metadata to the item.
+                $item->add_meta_data( 'Status', 'Refund', true );    
+                // Save the item after adding metadata.
+                $item->save();
+            }else{
+                $event_id  = get_post_meta( $order_id, 'event_id_order', true );
+                foreach ( $order->get_items() as $item_id => $item ) {
+                    $meta_data = $item->get_meta_data();
+                    $variation_id = $item->get_variation_id();
+                    $current  = time();
+                    $product_id = $item->get_product_id();
+                    $type = get_post_meta($product_id, 'phn_type_product', true);
+                    if($type === "event"){
+                        $date_refund = get_field('date_refund',$event_id);
+                        if($date_refund){
+                            $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                            $date_refund_timestamp = $date->getTimestamp();
+                        }
+                    }else{
+                        $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
+                        $variation_id_hotel = $item->get_variation_id();
+                        $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+                    }
                 
-             // Save the item after adding metadata.
-             $item->save();
+                    if($date_refund_timestamp > $current && status_item_order($meta_data) == true){
+                        // Add metadata to the item.
+                        $item->add_meta_data( 'Status', 'Refund', true );
+                        // Save the item after adding metadata.
+                        $item->save();
+                    } 
+                }
+            } 
         }
     }
 }

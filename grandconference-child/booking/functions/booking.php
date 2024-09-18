@@ -595,6 +595,7 @@ function create_invoice_number_order($order_id) {
         update_post_meta( $order_id, 'invoice_number', $invoice_number );
         update_post_meta( $order_id, 'event_id_of_hotel', $event_id );
     }
+    update_post_meta( $order_id, 'event_id_order', $event_id );
 }
 
 // get array day timestamp available variation hotel
