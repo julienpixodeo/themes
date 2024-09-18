@@ -173,6 +173,7 @@ function check_show_refund_all($order_id){
     $order = wc_get_order( $order_id );
     $event_id  = get_post_meta( $order_id, 'event_id_order', true );
     foreach ( $order->get_items() as $item_id => $item ) {
+        $meta_data = $item->get_meta_data();
         $variation_id = $item->get_variation_id();
         $current  = time();
         $product_id = $item->get_product_id();
@@ -189,7 +190,7 @@ function check_show_refund_all($order_id){
             $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
         }
 
-        if($date_refund_timestamp > $current){
+        if($date_refund_timestamp > $current && status_item_order($meta_data) == true){
             return true;
         } 
     }
@@ -465,7 +466,7 @@ function process_ajax_refund() {
                 }else{
                     update_stock_each_day_variation_hotel_and_stock_event_item($order,$order_item);   
                 }
-                add_status_refund_item_order($order,$order_item);
+                add_status_refund_item_order($order,$order_item,$order_id);
                 $message = 'Remboursement traité avec succès';
                 $status == true;
             }
@@ -486,7 +487,7 @@ add_action( 'wp_ajax_process_ajax_refund', 'process_ajax_refund' );
 add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
 
 // Add status refund item order
-function add_status_refund_item_order($order,$order_item){
+function add_status_refund_item_order($order,$order_item,$order_id){
     // Loop through order items.
     foreach ( $order->get_items() as $item_id => $item ) {
         // Check if this is the specific item you want to update.
@@ -499,39 +500,29 @@ function add_status_refund_item_order($order,$order_item){
                 $item->save();
             }
         }else{
-            $item_count = count($order->get_items());
-            if($item_count == 1){
+            $event_id  = get_post_meta( $order_id, 'event_id_order', true );
+            $meta_data = $item->get_meta_data();
+            $variation_id = $item->get_variation_id();
+            $current  = time();
+            $product_id = $item->get_product_id();
+            $type = get_post_meta($product_id, 'phn_type_product', true);
+            if($type === "event"){
+                $date_refund = get_field('date_refund',$event_id);
+                if($date_refund){
+                    $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                    $date_refund_timestamp = $date->getTimestamp();
+                }
+            }else{
+                $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
+                $variation_id_hotel = $item->get_variation_id();
+                $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+            }
+        
+            if($date_refund_timestamp > $current){
                 // Add metadata to the item.
-                $item->add_meta_data( 'Status', 'Refund', true );    
+                $item->add_meta_data( 'Status', 'Refund', true );
                 // Save the item after adding metadata.
                 $item->save();
-            }else{
-                $event_id  = get_post_meta( $order_id, 'event_id_order', true );
-                foreach ( $order->get_items() as $item_id => $item ) {
-                    $meta_data = $item->get_meta_data();
-                    $variation_id = $item->get_variation_id();
-                    $current  = time();
-                    $product_id = $item->get_product_id();
-                    $type = get_post_meta($product_id, 'phn_type_product', true);
-                    if($type === "event"){
-                        $date_refund = get_field('date_refund',$event_id);
-                        if($date_refund){
-                            $date = DateTime::createFromFormat('d/m/Y', $date_refund);
-                            $date_refund_timestamp = $date->getTimestamp();
-                        }
-                    }else{
-                        $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
-                        $variation_id_hotel = $item->get_variation_id();
-                        $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
-                    }
-                
-                    if($date_refund_timestamp > $current && status_item_order($meta_data) == true){
-                        // Add metadata to the item.
-                        $item->add_meta_data( 'Status', 'Refund', true );
-                        // Save the item after adding metadata.
-                        $item->save();
-                    } 
-                }
             } 
         }
     }
