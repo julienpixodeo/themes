@@ -145,9 +145,9 @@ function get_user_orders_info() {
                 echo '<div class="order-header"><h4>ID de commande: ' . $order_id . '</h4></div>';
                 echo '<div class="order-details">';
                 echo 'Date de commande: ' . $order_date->date('Y-m-d H:i:s') . '<br>';
-                echo 'Statut de la commande: ' . ucfirst($order_status) . '<br>';
+                // echo 'Statut de la commande: ' . ucfirst($order_status) . '<br>';
                 echo 'Total de la commande: ' . wc_price($order_total) . '<br>';
-                echo 'Mode de paiement: ' . $order_payment_method . '<br>';
+                // echo 'Mode de paiement: ' . $order_payment_method . '<br>';
                 echo '</div>';
 
                 $items = $order->get_items();
@@ -163,6 +163,8 @@ function get_user_orders_info() {
                     $product_sku = $product->get_sku();
                     $phn_type_product = get_post_meta($product_id,'phn_type_product',true);
                     $type = ($phn_type_product === 'event') ? 'Événement' : 'Hôtel';
+                    // Get meta data
+                    $meta_data = $item->get_meta_data();
 
                     $parent_id = wp_get_post_parent_id($product_id);
                     if($parent_id != 0){
@@ -187,8 +189,26 @@ function get_user_orders_info() {
                     echo '<span class="product-name">'.$type.' : ' . $product_name . '</span>';
                     echo '<div>Quantité: ' . $product_quantity . '</div>';
                     echo '<div class="wrap-price">Prix: ' . wc_price($product_total_incl_tax) . '</div>';
-                    if ($order_status === 'completed' && count($items) != 1) {
+                    if (!empty($meta_data)) {
+                        foreach ($meta_data as $meta) {
+                            $meta_key = $meta->key;
+                            $meta_value = $meta->value;
+                            if ($meta_key == 'Date') {
+                                echo '<div>' . esc_html($meta_key) . ': ' . esc_html($meta_value) . '</div>';
+                            }
+
+                            if(status_item_order($meta_data) == false){
+                                if ($meta_key == 'Status') {
+                                    echo '<div>' . esc_html($meta_key) . ': ' . esc_html($meta_value) . '</div>';
+                                }
+                            }
+                        }
+                    }
+               
+                    // if ($order_status === 'completed' && count($items) != 1) {
+                    if (count($items) != 1 && status_item_order($meta_data) == true) {
                         echo '<button class="refund-button" data-order-id="' . $order_id . '" 
+                        data-message-id="' . $item_id . '" 
                         data-order-item="' . $item_id . '"
                         data-order-price="' . round($product_total_incl_tax) . '">
                         Remboursement
@@ -201,9 +221,15 @@ function get_user_orders_info() {
                 echo '</div>'; // End of order items
 
                 // Add refund button and message box for each order
-                if ($order_status === 'completed' && count($items) === 1) {
-                    echo '<button class="refund-button" data-order-id="' . $order_id . '">Remboursement</button>';
-                    echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                // if ($order_status === 'completed' && count($items) === 1) {
+                if ($order_status !== 'refunded' && count($items) === 1) {
+                    if (count($items) === 1) {
+                        echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Remboursement</button>';
+                        echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                    }else{
+                        echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Rembourser tout</button>';
+                        echo '<div class="message-box" id="message-' . $order_id . '"></div>';
+                    }
                 }
 
                 echo '</div>'; // End of order box
@@ -217,6 +243,20 @@ function get_user_orders_info() {
     }
 }
 
+// status item order
+function status_item_order($meta_data){
+    foreach ($meta_data as $meta) {
+        $meta_key = $meta->key;
+        $meta_value = $meta->value;
+        if ($meta_key == 'Status') {
+            if(!empty($meta_value)){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 // Register shortcode to display user orders
 function register_user_orders_shortcode() {
     add_shortcode('user_orders', 'get_user_orders_info');
@@ -227,41 +267,99 @@ add_action('init', 'register_user_orders_shortcode');
 function process_ajax_refund() {
     // Check if the current user is logged in and if the order ID is passed
     if (is_user_logged_in() && isset($_POST['order_id'])) {
+        $message = '';
+        $status = true;
+        $order_item = isset($_POST['order_item']) ? (int) $_POST['order_item'] : '';
+        $order_price = isset($_POST['order_price']) ? $_POST['order_price'] : '';
         $order_id = intval($_POST['order_id']);
         $order = wc_get_order($order_id);
 
-        // Ensure the order exists and belongs to the current user
-        if ($order && $order->get_user_id() === get_current_user_id()) {
-            // Refund reason (optional)
-            $refund_reason = 'Refund requested by customer';
+        // Ensure the order exists and is paid
+        // if ( ! $order || ! $order->is_paid() ) {
+        //     $message = 'Les remboursements ne peuvent pas être traités';
+        //     $status = false;
+        // }
 
-            // Get the total amount of the order
-            $refund_amount = $order->get_total();
+        // Get the transaction ID from the order
+        $transaction_id = $order->get_transaction_id();
 
-            //Create a refund
-            $refund = wc_create_refund(array(
-                'amount'     => $refund_amount,
-                'reason'     => $refund_reason,
-                'order_id'   => $order_id,
-                'line_items' => array(), 
+        // Ensure the order has a transaction ID (Stripe payment)
+        // if ( ! $transaction_id ) {
+        //     $message = 'Les remboursements ne peuvent pas être traités';
+        //     $status = false;
+        // }
+
+        if($status == true){
+            if(empty($order_item)){
+                $refund_amount = $order->get_total();
+                $reason = 'Refund for Order #' . $order_id;
+            }else{
+                $refund_amount = $order_price;
+                $reason = 'Refund for Item ' . get_name_refund_item_order($order,$order_item);
+            }
+
+            $refund = wc_create_refund( array(
+                'amount'         => $refund_amount,
+                'reason'         => $reason,
+                'order_id'       => $order_id,
+                // 'refund_payment' => true,
             ));
 
             if (is_wp_error($refund)) {
-                wp_send_json_error($refund->get_error_message());
+                $message = 'Les remboursements ne peuvent pas être traités';
+                $status = false;
             } else {
-                // systempay_online_refund($order->get_id(), $refund->get_id());
-                update_stock_each_day_variation_hotel_and_stock_event($order);
-                wp_send_json_success('Refund successfully'); 
+                if(empty($order_item)){
+                    update_stock_each_day_variation_hotel_and_stock_event($order);
+                }else{
+                    update_stock_each_day_variation_hotel_and_stock_event_item($order,$order_item);
+                    add_status_refund_item_order($order,$order_item);
+                }
+                $message = 'Remboursement traité avec succès';
+                $status == true;
             }
-        } else {
-            wp_send_json_error('Invalid order or permission denied');
         }
     } else {
-        wp_send_json_error('User not logged in or missing order ID');
+        $message = 'Utilisateur non connecté';
+        $status = false;
     }
+
+    $return = array(
+	    'message' => $message,
+	    'status' => $status,
+	);	 
+
+	wp_send_json($return);
 }
 add_action( 'wp_ajax_process_ajax_refund', 'process_ajax_refund' );
 add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
+
+// Add status refund item order
+function add_status_refund_item_order($order,$order_item){
+    // Loop through order items.
+    foreach ( $order->get_items() as $item_id => $item ) {
+        // Check if this is the specific item you want to update.
+        if ( $item_id == $order_item ) {
+            // Add metadata to the item.
+            $item->add_meta_data( 'Status', 'Refund', true );
+            
+            // Save the item after adding metadata.
+            $item->save();
+        }
+    }
+}
+
+// Get name refund item order
+function get_name_refund_item_order($order,$order_item){
+    // Loop through order items.
+    foreach ( $order->get_items() as $item_id => $item ) {
+        // Check if this is the specific item you want to update.
+        if ( $item_id == $order_item ) {
+            $product_name = $item->get_name();
+        }
+    }
+    return $product_name;
+}
 
 // update stock each day variation hotel and stock event
 function update_stock_each_day_variation_hotel_and_stock_event($order) {
@@ -288,6 +386,67 @@ function update_stock_each_day_variation_hotel_and_stock_event($order) {
             $stock_day[] = [
                 $variation_id => $quantity_each_day
             ];
+        }
+    }
+
+    if(!empty($stock_day)){
+        $stock_day_data = mergeArray($stock_day);
+    }
+
+    session_start();
+    
+    if($event_id == 0 || $event_id == ''){
+        $event_id = $_SESSION['event_id'];
+    }
+    $data_hotel_event = get_post_meta($event_id, 'data_hotel_event', true);
+
+    if($data_hotel_event){
+        foreach ($data_hotel_event as &$hotel) {
+            foreach ($hotel['variations_data'] as &$variation) {
+                $variation_id = $variation['variations_id'];
+                if (isset($stock_day_data[$variation_id])) {
+                    foreach ($variation['date_available'] as $key => &$date_available) {
+                        $timestamp = $date_available['date'];
+                        if (isset($stock_day_data[$variation_id][$timestamp])) {
+                            $date_available['stock'] += $stock_day_data[$variation_id][$timestamp];
+                        }
+                    }
+                    // Re-index the array to maintain numeric keys
+                    $variation['date_available'] = array_values($variation['date_available']);
+                }
+            }
+        }        
+    }
+    update_post_meta($event_id, 'data_hotel_event', $data_hotel_event);
+}
+
+// update stock each day variation hotel and stock event item
+function update_stock_each_day_variation_hotel_and_stock_event_item($order,$order_item) {
+    $stock_day = [];
+    $stock_day_data = [];
+    
+    foreach ( $order->get_items() as $item_id => $item ) {
+        if($item_id === $order_item){
+            $variation_id = $item->get_variation_id();
+            $product_id = $item['product_id'];
+            $event_id = (int)get_post_meta($item['product_id'] , 'events_of_product' , true);
+            if ($event_id != 0) {
+                $number_tickets = get_post_meta( $event_id, 'number_tickets', true );
+                $new_number_tickets = $number_tickets + $item['quantity'];
+                update_post_meta( $event_id, 'number_tickets', $new_number_tickets ); 
+                $product_id = get_post_meta($event_id, 'product_of_events', true);
+                update_post_meta( $product_id, '_stock', $new_number_tickets ); 
+            }
+    
+            if($variation_id != 0){
+                $quantity = $item->get_quantity();
+                $start_day_st = $item->get_meta( 'start_day_st', true );
+                $end_day_st = $item->get_meta( 'end_day_st', true );
+                $quantity_each_day = quantity_each_day($start_day_st,$end_day_st,$quantity);
+                $stock_day[] = [
+                    $variation_id => $quantity_each_day
+                ];
+            }
         }
     }
 

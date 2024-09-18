@@ -222,7 +222,10 @@ jQuery(function($){
     // refund order
     $('body').on('click','.refund-button', function() {
         var order_id = $(this).data('order-id');
-        var messageBox = $('#message-' + order_id);
+        var message_id = $(this).data('message-id');
+        var order_item = $(this).data('order-item');
+        var order_price = $(this).data('order-price');
+        var messageBox = $('#message-' + message_id);
         $("body").addClass("ajax-load");
         $.ajax({
             url: jaxsr.url,
@@ -230,15 +233,19 @@ jQuery(function($){
             data: {
                 action: 'process_ajax_refund',
                 order_id: order_id,
+                order_item: order_item,
+                order_price: order_price,
+                messageBox: message_id,
             },
             success: function(response) {
                 $("body").removeClass("ajax-load");
-                if (response.success) {
+
+                if (response.status == true) {
                     messageBox.removeClass('error').addClass('success');
-                    messageBox.text('Remboursement traité avec succès !');
+                    messageBox.text(response.message);
                 } else {
                     messageBox.removeClass('success').addClass('error');
-                    messageBox.text('Le remboursement a échoué: ' + response.data);
+                    messageBox.text(response.message);
                 }
 
                 // Show the message

@@ -27,7 +27,7 @@ function add_tickets_to_cart(){
         $success = false;
     }else{
         if($product_id && $quantity){
-            wc_remove_product_from_cart($product_id);
+            // wc_remove_product_from_cart($product_id);
             $cart_item_key = WC()->cart->add_to_cart( $product_id, $quantity );
         }
     

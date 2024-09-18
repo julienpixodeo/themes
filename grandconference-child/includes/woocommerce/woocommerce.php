@@ -931,7 +931,7 @@ function meta_box_invoice_number($post){
 }
 
 
-add_action( 'woocommerce_order_status_changed', 'custom_process_on_order_status_change', 10, 4 );
+// add_action( 'woocommerce_order_status_changed', 'custom_process_on_order_status_change', 10, 4 );
 
 function custom_process_on_order_status_change( $order_id, $old_status, $new_status, $order ) {
 
@@ -956,7 +956,7 @@ function custom_process_on_order_status_change( $order_id, $old_status, $new_sta
                 $product_event_id = $event_id;
                 $number_tickets = get_post_meta( $event_id, 'number_tickets', true );
                 $new_number_tickets = $number_tickets + $item['quantity'];
-                update_post_meta( $event_id, 'number_tickets', $new_number_tickets );
+                // update_post_meta( $event_id, 'number_tickets', $new_number_tickets );
                 
             }else{
                 $item_data = array(
