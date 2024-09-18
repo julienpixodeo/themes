@@ -222,7 +222,7 @@ function get_user_orders_info() {
 
                 // Add refund button and message box for each order
                 // if ($order_status === 'completed' && count($items) === 1) {
-                if ($order_status !== 'refunded' && count($items) === 1) {
+                if ($order_status !== 'refunded') {
                     if (count($items) === 1) {
                         echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Remboursement</button>';
                         echo '<div class="message-box" id="message-' . $order_id . '"></div>';
@@ -312,9 +312,9 @@ function process_ajax_refund() {
                 if(empty($order_item)){
                     update_stock_each_day_variation_hotel_and_stock_event($order);
                 }else{
-                    update_stock_each_day_variation_hotel_and_stock_event_item($order,$order_item);
-                    add_status_refund_item_order($order,$order_item);
+                    update_stock_each_day_variation_hotel_and_stock_event_item($order,$order_item);   
                 }
+                add_status_refund_item_order($order,$order_item);
                 $message = 'Remboursement traité avec succès';
                 $status == true;
             }
@@ -339,12 +339,20 @@ function add_status_refund_item_order($order,$order_item){
     // Loop through order items.
     foreach ( $order->get_items() as $item_id => $item ) {
         // Check if this is the specific item you want to update.
-        if ( $item_id == $order_item ) {
-            // Add metadata to the item.
-            $item->add_meta_data( 'Status', 'Refund', true );
-            
-            // Save the item after adding metadata.
-            $item->save();
+        if(!empty($order_item)){
+            if ( $item_id == $order_item ) {
+                // Add metadata to the item.
+                $item->add_meta_data( 'Status', 'Refund', true );
+                
+                // Save the item after adding metadata.
+                $item->save();
+            }
+        }else{
+             // Add metadata to the item.
+             $item->add_meta_data( 'Status', 'Refund', true );
+                
+             // Save the item after adding metadata.
+             $item->save();
         }
     }
 }
