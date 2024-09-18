@@ -131,7 +131,7 @@ function get_user_orders_info() {
 
         ob_start();
 
-        if($orders){
+        if($orders){   
             // Loop through each order
             foreach ($orders as $order) {
                 $order_id = $order->get_id();
@@ -154,6 +154,16 @@ function get_user_orders_info() {
 
                 echo '<div class="order-items">';
                 echo '<h4>Commander des articles:</h4>';
+
+                foreach ($order->get_items() as $item_id => $item) {
+                    $variation_id = $item->get_variation_id();
+                    if ($variation_id == 0) {
+                        $product_id = $item->get_product_id();
+                        $event_id = (int) get_post_meta($product_id, 'events_of_product', true);
+                        break; // Exit the loop once you find the event ID
+                    }
+                }
+
                 foreach ($items as $item_id => $item) {
                     $product = $item->get_product();
                     $product_name = $item->get_name();
@@ -231,6 +241,22 @@ function get_user_orders_info() {
                         echo '<div class="message-box" id="message-' . $order_id . '"></div>';
                     }
                 }
+
+                if (!isset($event_id)) {
+                    $event_id  = get_post_meta( $order_id, 'event_id_of_hotel', true );
+                }
+                echo $event_id."<br>";
+
+                echo get_field('date_refund',$event_id)."<br>";
+
+                $date = DateTime::createFromFormat('d/m/Y', get_field('date_refund',$event_id));
+                $timestamp = $date->getTimestamp();
+
+                echo "timestamp: ".$timestamp."<br>";
+
+                $current  = time();
+
+                echo 'current: '.$current ;
 
                 echo '</div>'; // End of order box
             }
