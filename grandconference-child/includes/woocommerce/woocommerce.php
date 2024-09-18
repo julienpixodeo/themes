@@ -261,7 +261,7 @@ function action_phn_woocommerce_thankyou($order_id)
                 }
             }
 
-            if($result){
+            if(isset($result)){
                 foreach($result as $key => $value){
                     $table_leads_detail = $wpdb->prefix . 'vxcf_leads_detail';
                     $wpdb->query( $wpdb->prepare(
