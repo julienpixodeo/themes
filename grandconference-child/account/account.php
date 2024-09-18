@@ -234,11 +234,26 @@ function get_refund_amount($order_id){
     return $refund_amount;
 }
 
+function get_email_by_user_id($user_id) {
+    // Get the user data by user ID
+    $user_data = get_userdata($user_id);
+
+    // Check if user data exists
+    if ($user_data) {
+        // Return the user's email
+        return $user_data->user_email;
+    } else {
+        // Return false if no user data found
+        return false;
+    }
+}
+
+
 // get user orders info
 function get_user_orders_info() {
     $user_id = get_current_user_id();
 
-    if ($user_id) {
+    if ($user_id && get_email_by_user_id($user_id) === 'julien@pixodeo.net') {
         $args = array(
             'customer_id' => $user_id,
             'status'      => 'any',
