@@ -94,7 +94,7 @@ function custom_modify_product_permalink($permalink, $post)
             }
         }
 
-        if (get_post_type($post->ID) === 'hotel') {
+        if (get_post_type($post->ID) === 'hotel' && !empty($id_ticket)) {
             $permalink .= $id_ticket;
         }
     }
@@ -956,7 +956,7 @@ function custom_process_on_order_status_change( $order_id, $old_status, $new_sta
                 $product_event_id = $event_id;
                 $number_tickets = get_post_meta( $event_id, 'number_tickets', true );
                 $new_number_tickets = $number_tickets + $item['quantity'];
-                // update_post_meta( $event_id, 'number_tickets', $new_number_tickets );
+                update_post_meta( $event_id, 'number_tickets', $new_number_tickets );
                 
             }else{
                 $item_data = array(

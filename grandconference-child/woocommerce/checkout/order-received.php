@@ -64,58 +64,58 @@ $results = $wpdb->get_results($query);
 
 $results = $wpdb->get_results($query);
 
-if ($results) {
-	$newTypeOfRoom = array();
-	foreach ($results as $result) {
-		$product_id = $result->product_id;
-		$product_qty = (int) $result->product_qty;
-		$variation_id = (int) $result->variation_id;
-		$event_id = (int) get_post_meta($event_id, 'events_of_product', true);
-		$typeOfRoom = get_post_meta($event_id, 'hotel_type-of-rooms', true);
-		// echo "<pre>";
-		// var_dump("typeOfRoom" ,$typeOfRoom);
-		$typeOfRoomNew = [];
-		if ($typeOfRoom) {
-			foreach ($typeOfRoom as $hotel) {
-				$hotelId = $hotel["hotelId"];
-				$roomTypes = [];
-				foreach ($hotel["roomTypes"] as $roomType) {
-					$id = (int) $roomType["id"];
-					$roomName = $roomType["name"];
-					$price = $roomType["price"];
-					$pricenew = $roomType["pricenew"];
-					$quantity = (int) $roomType["quantity"];
-					$fooEvents = (int) $roomType["fooEvents"];
-					if ($id == $variation_id) {
-						$fooEvents = $fooEvents - $product_qty;
-					}
-					$roomTypes[] = array(
-						"id" => $id,
-						"name" => $roomName,
-						"price" => $price,
-						"pricenew" => $pricenew,
-						"quantity" => $quantity,
-						"fooEvents" => $fooEvents,
-						"descriptionTypeRoom" => $roomType["descriptionTypeRoom"]
-					);
-				}
-				$typeOfRoomNew[] = array(
-					'hotelId' => $hotelId,
-					'roomTypes' => $roomTypes
-				);
-			}
-		}
+// if ($results) {
+// 	$newTypeOfRoom = array();
+// 	foreach ($results as $result) {
+// 		$product_id = $result->product_id;
+// 		$product_qty = (int) $result->product_qty;
+// 		$variation_id = (int) $result->variation_id;
+// 		$event_id = (int) get_post_meta($event_id, 'events_of_product', true);
+// 		$typeOfRoom = get_post_meta($event_id, 'hotel_type-of-rooms', true);
+// 		// echo "<pre>";
+// 		// var_dump("typeOfRoom" ,$typeOfRoom);
+// 		$typeOfRoomNew = [];
+// 		if ($typeOfRoom) {
+// 			foreach ($typeOfRoom as $hotel) {
+// 				$hotelId = $hotel["hotelId"];
+// 				$roomTypes = [];
+// 				foreach ($hotel["roomTypes"] as $roomType) {
+// 					$id = (int) $roomType["id"];
+// 					$roomName = $roomType["name"];
+// 					$price = $roomType["price"];
+// 					$pricenew = $roomType["pricenew"];
+// 					$quantity = (int) $roomType["quantity"];
+// 					$fooEvents = (int) $roomType["fooEvents"];
+// 					if ($id == $variation_id) {
+// 						$fooEvents = $fooEvents - $product_qty;
+// 					}
+// 					$roomTypes[] = array(
+// 						"id" => $id,
+// 						"name" => $roomName,
+// 						"price" => $price,
+// 						"pricenew" => $pricenew,
+// 						"quantity" => $quantity,
+// 						"fooEvents" => $fooEvents,
+// 						"descriptionTypeRoom" => $roomType["descriptionTypeRoom"]
+// 					);
+// 				}
+// 				$typeOfRoomNew[] = array(
+// 					'hotelId' => $hotelId,
+// 					'roomTypes' => $roomTypes
+// 				);
+// 			}
+// 		}
 
-		// echo "<pre>";
-		// var_dump("typeOfRoom new" ,$variation_id);
-		// echo "------------------------------------";
-		update_post_meta($event_id, 'hotel_type-of-rooms', $typeOfRoomNew);
+// 		// echo "<pre>";
+// 		// var_dump("typeOfRoom new" ,$variation_id);
+// 		// echo "------------------------------------";
+// 		update_post_meta($event_id, 'hotel_type-of-rooms', $typeOfRoomNew);
 
-	}
+// 	}
 
-} else {
+// } else {
 
-}
+// }
 ?>
 <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">
 	<?php
