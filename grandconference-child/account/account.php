@@ -277,12 +277,37 @@ function get_email_by_user_id($user_id) {
     }
 }
 
-
 // get user orders info
 function get_user_orders_info() {
     $user_id = get_current_user_id();
+    if(isset($_SESSION['lan_st'])){
+        $lan_st = $_SESSION['lan_st'];
+    }else{
+        $lan_st = 'french';
+    }
 
+    if($lan_st === 'french'){
+        $text_order_id = 'ID de commande';
+        $text_order_date = 'Date de commande';
+        $text_order_total = 'Total de la commande';
+        $text_order_items = 'Commander des articles';
+        $text_quantity = 'Quantité';
+        $text_price = 'Prix';
+        $text_refund = 'Remboursement';
+        $text_refund_all  = 'Rembourser tout';
+    }else{
+        $text_order_id = 'Order ID';
+        $text_order_date = 'Order date';
+        $text_order_total = 'Order total';
+        $text_order_items = 'Order items';
+        $text_quantity = 'Quantity';
+        $text_price = 'Price';
+        $text_refund = 'Refund';
+        $text_refund_all  = 'Refund all';
+    }
     if ($user_id) {
+        session_start();
+        
         $args = array(
             'customer_id' => $user_id,
             'status'      => 'any',
@@ -304,18 +329,16 @@ function get_user_orders_info() {
                 $order_payment_method = $order->get_payment_method_title();
 
                 echo '<div class="order-box" id="order-' . $order_id . '">';
-                echo '<div class="order-header"><h4>ID de commande: ' . $order_id . '</h4></div>';
+                echo '<div class="order-header"><h4>'.$text_order_id.': ' . $order_id . '</h4></div>';
                 echo '<div class="order-details">';
-                echo 'Date de commande: ' . $order_date->date('Y-m-d H:i:s') . '<br>';
-                // echo 'Statut de la commande: ' . ucfirst($order_status) . '<br>';
-                echo 'Total de la commande: ' . wc_price($order_total) . '<br>';
-                // echo 'Mode de paiement: ' . $order_payment_method . '<br>';
+                echo ''.$text_order_date.': ' . $order_date->date('Y-m-d H:i:s') . '<br>';
+                echo ''.$text_order_total.': ' . wc_price($order_total) . '<br>';
                 echo '</div>';
 
                 $items = $order->get_items();
 
                 echo '<div class="order-items">';
-                echo '<h4>Commander des articles:</h4>';
+                echo '<h4>'.$text_order_items.':</h4>';
 
                 // Add refund button and message box for each order
                 $event_id  = get_post_meta( $order_id, 'event_id_order', true );
@@ -328,7 +351,11 @@ function get_user_orders_info() {
                     $product_id = $product->get_id();
                     $product_sku = $product->get_sku();
                     $phn_type_product = get_post_meta($product_id,'phn_type_product',true);
-                    $type = ($phn_type_product === 'event') ? 'Événement' : 'Hôtel';
+                    if($lan_st === 'french'){
+                        $type = ($phn_type_product === 'event') ? 'Événement' : 'Hôtel';
+                    }else{
+                        $type = ($phn_type_product === 'event') ? 'Event' : 'Hotel';
+                    }
                     // Get meta data
                     $meta_data = $item->get_meta_data();
 
@@ -353,8 +380,8 @@ function get_user_orders_info() {
                     echo '<img width="300" height="300" src="'.$thumbnail_url.'" class="image-product">';
                     echo '<div class="product-item-content">';
                     echo '<span class="product-name">'.$type.' : ' . $product_name . '</span>';
-                    echo '<div>Quantité: ' . $product_quantity . '</div>';
-                    echo '<div class="wrap-price">Prix: ' . wc_price($product_total_incl_tax) . '</div>';
+                    echo '<div>'.$text_quantity.': ' . $product_quantity . '</div>';
+                    echo '<div class="wrap-price">'.$text_price.': ' . wc_price($product_total_incl_tax) . '</div>';
                     if (!empty($meta_data)) {
                         foreach ($meta_data as $meta) {
                             $meta_key = $meta->key;
@@ -387,12 +414,12 @@ function get_user_orders_info() {
                     }
                
                     // if ($order_status === 'completed' && count($items) != 1) {
-                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded') {
+                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded' && $order_status === 'completed') {
                         echo '<button class="refund-button" data-order-id="' . $order_id . '" 
                         data-message-id="' . $item_id . '" 
                         data-order-item="' . $item_id . '"
                         data-order-price="' . round($product_total_incl_tax) . '">
-                        Remboursement
+                        '.$text_refund.'
                         </button>';
                         echo '<div class="message-box" id="message-' . $item_id . '"></div>';
                     }
@@ -402,8 +429,7 @@ function get_user_orders_info() {
                 echo '</div>'; // End of order items
 
                 // if ($order_status === 'completed' && count($items) === 1) {
-                // if ($order_status !== 'refunded' && $order_status === 'completed') {
-                if ($order_status !== 'refunded') {
+                if ($order_status !== 'refunded' && $order_status === 'completed') {
                     if (count($items) === 1) {
                         if(event_true($order_id) == false){
                             $date_refund = get_field('date_refund',$event_id);
@@ -418,12 +444,12 @@ function get_user_orders_info() {
                         }
                         $current  = time();
                         if($date_refund_timestamp > $current){
-                            echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Remboursement</button>';
+                            echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >'.$text_refund.'</button>';
                             echo '<div class="message-box" id="message-' . $order_id . '"></div>';
                         }
                     }else{
                         if(check_show_refund_all($order_id) == true){
-                            echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >Rembourser tout</button>';
+                            echo '<button class="refund-button" data-order-id="' . $order_id . '" data-message-id="' . $order_id . '" >'.$text_refund_all.'</button>';
                             echo '<div class="message-box" id="message-' . $order_id . '"></div>';
                         }
                     }
