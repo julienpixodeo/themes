@@ -737,4 +737,18 @@ function update_stock_each_day_variation_hotel_and_stock_event_item($order,$orde
     }
     update_post_meta($event_id, 'data_hotel_event', $data_hotel_event);
 }
+
+// set language load event
+function set_language_load_event() {
+	if ( is_singular('tribe_events') && !is_admin() ) {
+        $lan = get_field('language',get_the_ID());
+        session_start();
+        if(isset($lan)){
+            $_SESSION['lan_st'] = $lan;
+        }else{
+            $_SESSION['lan_st'] = 'english';
+        }
+	}
+}
+add_action( 'template_redirect', 'set_language_load_event' );
 ?>

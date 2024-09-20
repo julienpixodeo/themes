@@ -1,4 +1,9 @@
 jQuery(function($){
+    // Override default email validation to enforce stricter rules
+    $.validator.addMethod("strictEmail", function(value, element) {
+        return this.optional(element) || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
+    }, "Veuillez entrer une adresse email valide.");
+
     // validate
     $("form#login").validate({
         rules: {
@@ -33,7 +38,7 @@ jQuery(function($){
             },
             email: {
                 required: true,
-                email: true
+                strictEmail: true
             },
             password: {
                 required: true,
@@ -54,7 +59,7 @@ jQuery(function($){
             },
             email: {
                 required: "Ce champ est obligatoire.",
-                email: "Veuillez entrer une adresse email valide."
+                strictEmail: "Veuillez entrer une adresse email valide."
             },
             password: {
                 required: "Ce champ est obligatoire.",
@@ -85,33 +90,33 @@ jQuery(function($){
             },
             email: {
                 required: true,
-                email: true
+                strictEmail: true
             },
             password: {
                 minlength: 8
             },
             password_confirm: {
                 minlength: 8,
-                equalTo: "#password" // Ensures the confirmation matches the password
+                equalTo: "#password"
             }
         },
         messages: {
             first_name: {
-                required: "Ce champ est obligatoire.",
+                required: $('.error-required').val(),
             },
             last_name: {
-                required: "Ce champ est obligatoire.",
+                required: $('.error-required').val(),
             },
             email: {
-                required: "Ce champ est obligatoire.",
-                email: "Veuillez entrer une adresse email valide."
+                required: $('.error-required').val(),
+                strictEmail: $('.error-valid-email').val(),
             },
             password: {
-                minlength: "Votre mot de passe doit contenir au moins 8 caractères."
+                minlength: $('.error-min-pw').val(),
             },
             password_confirm: {
-                minlength: "Votre mot de passe doit contenir au moins 8 caractères.",
-                equalTo: "Les mots de passe ne correspondent pas."
+                minlength: $('.error-min-pw').val(),
+                equalTo: $('.error-equa-pw').val(),
             }
         },
         errorPlacement: function(error, element) {
