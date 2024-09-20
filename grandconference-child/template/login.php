@@ -6,6 +6,17 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 } else {
     $referring_url = home_url();
 }
+session_start();
+if(isset($_SESSION['lan_st'])){
+    $lan_st = $_SESSION['lan_st'];
+}else{
+    $lan_st = 'french';
+}
+if($lan_st === 'french'){
+    $title = get_the_title(); 
+}else{
+    $title = "Login";
+} 
 ?>
 <div id="page_caption" class="">
 	<div class="page_title_wrapper">
@@ -14,7 +25,7 @@ if (isset($_SERVER['HTTP_REFERER'])) {
 				<div class="page_title_content">
 					<h1 class="text-center">
 						<?php 
-						    echo get_the_title();
+						    echo $title;
 						?>
 					</h1>
 				</div>
