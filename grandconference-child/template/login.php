@@ -14,8 +14,22 @@ if(isset($_SESSION['lan_st'])){
 }
 if($lan_st === 'french'){
     $title = get_the_title(); 
+	$user_name = 'Nom d\'utilisateur';
+	$password = 'Mot de passe';
+	$create_account = 'Créer un compte ?';
+	$btn_login = 'Se connecter';
+	$error_required = 'Ce champ est obligatoire.';
+	$message_error = 'Nom d\'utilisateur ou mot de passe incorrect.';
+	$message_success = 'Connectez-vous avec succès';
 }else{
     $title = "Login";
+	$user_name = 'User name';
+	$password = 'Password';
+	$create_account = 'Create an account?';
+	$btn_login = 'Login';
+	$error_required = 'This field is required.';
+	$message_error = 'Incorrect username or password.';
+	$message_success = 'Login successfully';
 } 
 ?>
 <div id="page_caption" class="">
@@ -39,19 +53,21 @@ if($lan_st === 'french'){
 		<div class="inner_wrapper">
 			<div class="sidebar_content full_width">
                 <form id="login" action="login" method="post">
+					<input type="hidden" class="error-required" value="<?php echo $error_required; ?>">
+					<input type="hidden" class="message-success" value="<?php echo $message_success; ?>">
                     <input type="hidden" value="<?php echo $referring_url; ?>" class="referring-url">
                     <div class="box-field">
-                        <label for="">Nom d'utilisateur</label>
-                        <input id="username" type="text" name="username" placeholder="Nom d'utilisateur" autocomplete="off" required>
+                        <label for=""><?php echo $user_name; ?></label>
+                        <input id="username" type="text" name="username" placeholder="<?php echo $user_name; ?>" autocomplete="off" required>
                     </div>
                     <div class="box-field">
-                        <label for="">Mot de passe</label>
-                        <input id="password" type="password" name="password" placeholder="Mot de passe" autocomplete="off" required>
+                        <label for=""><?php echo $password; ?></label>
+                        <input id="password" type="password" name="password" placeholder="<?php echo $password; ?>" autocomplete="off" required>
                     </div>
                     <!-- <a class="lost" href="<?php echo wp_lostpassword_url(); ?>">Mot de passe oublié ?</a> -->
-                    <a class="lost" href="<?php echo home_url('creer-un-compte'); ?>">Créer un compte ?</a>
-                    <div class="message">Nom d'utilisateur ou mot de passe incorrect.</div>
-                    <input class="submit_button" type="submit" value="Se connecter" name="submit">
+                    <a class="lost" href="<?php echo home_url('creer-un-compte'); ?>"><?php echo $create_account; ?></a>
+                    <div class="message"><?php echo $message_error; ?></div>
+                    <input class="submit_button" type="submit" value="<?php echo $btn_login; ?>" name="submit">
                     <?php wp_nonce_field( 'ajax-login-nonce', 'security' ); ?>
                 </form>
 			</div>

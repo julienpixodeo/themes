@@ -25,6 +25,20 @@ add_action( 'wp_ajax_nopriv_ajaxlogin', 'ajax_login' );
 
 // ajax regiter
 function RegisterClient(){
+    session_start();
+    if(isset($_SESSION['lan_st'])){
+        $lan_st = $_SESSION['lan_st'];
+    }else{
+        $lan_st = 'french';
+    }
+
+    if($lan_st === 'french'){
+        $message_error = 'Impossible de créer un compte';
+        $email_exist = 'L\'e-mail existe déjà';
+    }else{
+        $message_error = 'Unable to create an account';
+        $email_exist = 'Email already exists';
+    }
     $email = sanitize_email($_POST['email']);
     $password = sanitize_text_field($_POST['password']);
     $password_confirm = sanitize_text_field($_POST['password_confirm']);
@@ -52,10 +66,10 @@ function RegisterClient(){
 		    $user_verify = wp_signon( $login_data, false ); 
 		    $data = true;
 		}else{
-            $data = 'Impossible de créer un compte';
+            $data = $message_error;
         }
 	}else{
-        $data = 'L\'e-mail existe';
+        $data = $email_exist;
     }
 
 	$return = array(

@@ -16,10 +16,10 @@ jQuery(function($){
         },
         messages: {
             username: {
-                required: "Ce champ est obligatoire."
+                required: $('.error-required').val(),
             },
             password: {
-                required: "Ce champ est obligatoire."
+                required: $('.error-required').val(),
             }
         },
         submitHandler: function(form) {
@@ -52,23 +52,23 @@ jQuery(function($){
         },
         messages: {
             first_name: {
-                required: "Ce champ est obligatoire.",
+                required: $('.error-required').val(),
             },
             last_name: {
-                required: "Ce champ est obligatoire.",
+                required: $('.error-required').val(),
             },
             email: {
-                required: "Ce champ est obligatoire.",
-                strictEmail: "Veuillez entrer une adresse email valide."
+                required: $('.error-required').val(),
+                strictEmail: $('.error-valid-email').val(),
             },
             password: {
-                required: "Ce champ est obligatoire.",
-                minlength: "Votre mot de passe doit contenir au moins 8 caractères."
+                required: $('.error-required').val(),
+                minlength: $('.error-min-pw').val(),
             },
             password_confirm: {
-                required: "Ce champ est obligatoire.",
-                minlength: "Votre mot de passe doit contenir au moins 8 caractères.",
-                equalTo: "Les mots de passe ne correspondent pas."
+                required: $('.error-required').val(),
+                minlength: $('.error-min-pw').val(),
+                equalTo: $('.error-equa-pw').val(),
             }
         },
         errorPlacement: function(error, element) {
@@ -144,7 +144,7 @@ jQuery(function($){
                     'security': $('form#login #security').val() },
                 success: function(response){
                     if(response.data == true){
-                        $('form#login .message').text('Connectez-vous avec succès');
+                        $('form#login .message').text($('.message-success').val());
                         $('form#login .message').css('color','#008000');
                         window.location.href = $('.referring-url').val();
                     }
@@ -175,11 +175,12 @@ jQuery(function($){
                 },
                 success: function(response){
                     if(response.data == true){
-                        $('form#register-client .message').text('Compte créé avec succès');
+                        $('form#register-client .message').text($('.success').val());
                         $('form#register-client .message').css('color','#008000');
                         window.location.href = $('.url-comple').val();
                     }else{
                         $('form#register-client .message').html(response.data);
+                        $('form#register-client .message').css('color','red');
                     }
                     $('form#register-client .message').show();
                     $("body").removeClass("ajax-load");
