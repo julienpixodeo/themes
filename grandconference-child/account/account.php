@@ -70,10 +70,25 @@ add_action('wp_ajax_nopriv_RegisterClient', 'RegisterClient');
 // ajax edit client
 function EditClient() {
     check_ajax_referer('edit_client_action', 'edit_client_nonce'); // Check nonce
+    session_start();
+    if(isset($_SESSION['lan_st'])){
+        $lan_st = $_SESSION['lan_st'];
+    }else{
+        $lan_st = 'french';
+    }
+
+    if($lan_st === 'french'){
+        $message_user = 'Utilisateur non connecté';
+        $email_exist = 'L\'e-mail existe déjà';
+    }else{
+        $message_user = 'User not logged in';
+        $email_exist = 'Email already exists';
+    }
+
     $pw = false;
     $user_id = get_current_user_id(); // Get the current user ID
     if (!$user_id) {
-        wp_send_json(array('data' => 'Utilisateur non connecté'));
+        wp_send_json(array('data' => $message_user));
         return;
     }
 
@@ -91,7 +106,7 @@ function EditClient() {
                 'user_email' => $email,
             ));
         } else {
-            wp_send_json(array('data' => 'L\'e-mail existe déjà'));
+            wp_send_json(array('data' => $email_exist));
             return;
         }
     }

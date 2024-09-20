@@ -209,7 +209,7 @@ jQuery(function($){
                 },
                 success: function(response){
                     if (response.data === true) {
-                        $('form#edit-client .message').text('Information mise à jour avec succès');
+                        $('form#edit-client .message').text($('.success-update').val());
                         $('form#edit-client .message').css('color','#008000');
                         if(response.pw == true){
                             window.location.href = $('.url-login').val();

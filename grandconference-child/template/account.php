@@ -21,6 +21,7 @@ if($lan_st === 'french'){
     $error_valid_email = 'Veuillez entrer une adresse email valide.';
     $error_min_pw = 'Votre mot de passe doit contenir au moins 8 caractères.';
     $error_equa_pw = 'Les mots de passe ne correspondent pas.';
+    $success_update = 'Information mise à jour avec succès';
 }else{
     $title = "Account";
     $order = 'Order';
@@ -34,6 +35,7 @@ if($lan_st === 'french'){
     $error_valid_email = 'Please enter a valid email address.';
     $error_min_pw = 'Your password must contain at least 8 characters.';
     $error_equa_pw = 'Passwords do not match.';
+    $success_update = 'Information updated successfully';
 } 
 
 ?>
@@ -78,6 +80,7 @@ if($lan_st === 'french'){
                         <input type="hidden" class="error-valid-email" value="<?php echo $error_valid_email; ?>">
                         <input type="hidden" class="error-min-pw" value="<?php echo $error_min_pw; ?>">
                         <input type="hidden" class="error-equa-pw" value="<?php echo $error_equa_pw; ?>">
+                        <input type="hidden" class="success-update" value="<?php echo $success_update; ?>">
                         <input type="hidden" class="url-login" value="<?php echo home_url('se-connecter'); ?>">
                         <div class="box-field">
                             <label for=""><?php echo $first_name; ?></label>
