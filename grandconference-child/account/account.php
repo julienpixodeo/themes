@@ -253,7 +253,7 @@ function get_email_by_user_id($user_id) {
 function get_user_orders_info() {
     $user_id = get_current_user_id();
 
-    if ($user_id && get_email_by_user_id($user_id) === 'julien@pixodeo.net') {
+    if ($user_id) {
         $args = array(
             'customer_id' => $user_id,
             'status'      => 'any',
@@ -358,7 +358,7 @@ function get_user_orders_info() {
                     }
                
                     // if ($order_status === 'completed' && count($items) != 1) {
-                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded') {
+                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded' && $order_status === 'completed') {
                         echo '<button class="refund-button" data-order-id="' . $order_id . '" 
                         data-message-id="' . $item_id . '" 
                         data-order-item="' . $item_id . '"
@@ -373,7 +373,7 @@ function get_user_orders_info() {
                 echo '</div>'; // End of order items
 
                 // if ($order_status === 'completed' && count($items) === 1) {
-                if ($order_status !== 'refunded') {
+                if ($order_status !== 'refunded' && $order_status === 'completed') {
                     if (count($items) === 1) {
                         if(event_true($order_id) == false){
                             $date_refund = get_field('date_refund',$event_id);
@@ -442,19 +442,19 @@ function process_ajax_refund() {
         $order = wc_get_order($order_id);
 
         // Ensure the order exists and is paid
-        // if ( ! $order || ! $order->is_paid() ) {
-        //     $message = 'Les remboursements ne peuvent pas être traités';
-        //     $status = false;
-        // }
+        if ( ! $order || ! $order->is_paid() ) {
+            $message = 'Les remboursements ne peuvent pas être traités';
+            $status = false;
+        }
 
         // Get the transaction ID from the order
         $transaction_id = $order->get_transaction_id();
 
         // Ensure the order has a transaction ID (Stripe payment)
-        // if ( ! $transaction_id ) {
-        //     $message = 'Les remboursements ne peuvent pas être traités';
-        //     $status = false;
-        // }
+        if ( ! $transaction_id ) {
+            $message = 'Les remboursements ne peuvent pas être traités';
+            $status = false;
+        }
 
         if($status == true){
             if(empty($order_item)){
@@ -469,7 +469,7 @@ function process_ajax_refund() {
                 'amount'         => $refund_amount,
                 'reason'         => $reason,
                 'order_id'       => $order_id,
-                // 'refund_payment' => true,
+                'refund_payment' => true,
             ));
 
             if (is_wp_error($refund)) {
@@ -504,6 +504,7 @@ add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
 // Add status refund item order
 function add_status_refund_item_order($order,$order_item,$order_id){
     // Loop through order items.
+    $item_count = count($order->get_items());
     foreach ( $order->get_items() as $item_id => $item ) {
         // Check if this is the specific item you want to update.
         if(!empty($order_item)){
@@ -515,30 +516,38 @@ function add_status_refund_item_order($order,$order_item,$order_id){
                 $item->save();
             }
         }else{
-            $event_id  = get_post_meta( $order_id, 'event_id_order', true );
-            $meta_data = $item->get_meta_data();
-            $variation_id = $item->get_variation_id();
-            $current  = time();
-            $product_id = $item->get_product_id();
-            $type = get_post_meta($product_id, 'phn_type_product', true);
-            if($type === "event"){
-                $date_refund = get_field('date_refund',$event_id);
-                if($date_refund){
-                    $date = DateTime::createFromFormat('d/m/Y', $date_refund);
-                    $date_refund_timestamp = $date->getTimestamp();
-                }
-            }else{
-                $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
-                $variation_id_hotel = $item->get_variation_id();
-                $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
-            }
-        
-            if($date_refund_timestamp > $current){
+            if($item_count == 1){
                 // Add metadata to the item.
                 $item->add_meta_data( 'Status', 'Refund', true );
                 // Save the item after adding metadata.
                 $item->save();
-            } 
+            }
+            else{
+                $event_id  = get_post_meta( $order_id, 'event_id_order', true );
+                $meta_data = $item->get_meta_data();
+                $variation_id = $item->get_variation_id();
+                $current  = time();
+                $product_id = $item->get_product_id();
+                $type = get_post_meta($product_id, 'phn_type_product', true);
+                if($type === "event"){
+                    $date_refund = get_field('date_refund',$event_id);
+                    if($date_refund){
+                        $date = DateTime::createFromFormat('d/m/Y', $date_refund);
+                        $date_refund_timestamp = $date->getTimestamp();
+                    }
+                }else{
+                    $id_hotel  = get_post_meta($product_id, 'hotels_of_product', true);
+                    $variation_id_hotel = $item->get_variation_id();
+                    $date_refund_timestamp = get_date_refund_hotel($id_hotel,$event_id,$variation_id_hotel);
+                }
+            
+                if($date_refund_timestamp > $current){
+                    // Add metadata to the item.
+                    $item->add_meta_data( 'Status', 'Refund', true );
+                    // Save the item after adding metadata.
+                    $item->save();
+                } 
+            }            
         }
     }
 }
