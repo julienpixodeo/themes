@@ -216,6 +216,7 @@ jQuery(function($){
                         } 
                     } else {
                         $('form#edit-client .message').html(response.data);
+                        $('form#edit-client .message').css('color','red');
                     }
                     $('form#edit-client .message').show();
                     $("body").removeClass("ajax-load");
