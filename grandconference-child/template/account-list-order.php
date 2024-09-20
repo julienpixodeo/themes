@@ -1,6 +1,20 @@
 <?php
 /* Template Name: Account list order*/
 get_header(); 
+session_start();
+if(isset($_SESSION['lan_st'])){
+    $lan_st = $_SESSION['lan_st'];
+}else{
+    $lan_st = 'french';
+}
+
+if($lan_st === 'french'){
+    $title = get_the_title();
+    $account = 'Compte';
+}else{
+    $title = "Order";
+    $account = 'Account';
+} 
 ?>
 <div id="page_caption" class="">
 	<div class="page_title_wrapper">
@@ -9,7 +23,7 @@ get_header();
 				<div class="page_title_content">
 					<h1 class="text-center">
 						<?php 
-						    echo get_the_title();
+						    echo $title;
 						?>
 					</h1>
 				</div>
@@ -28,8 +42,8 @@ get_header();
                 <div class="wrap-content-sidebar">
                     <div class="sidebar-account">
                         <ul>
-                            <li><a href="<?php echo home_url('compte'); ?>">Compte</a></li>
-                            <li class="active"><a href="<?php echo get_permalink(); ?>"><?php echo get_the_title(); ?></a></li>
+                            <li><a href="<?php echo home_url('compte'); ?>"><?php echo $account; ?></a></li>
+                            <li class="active"><a href="<?php echo get_permalink(); ?>"><?php echo $title; ?></a></li>
                         </ul>
                     </div>
                     <div class="wrap-list-order">
@@ -44,7 +58,6 @@ get_header();
 									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 								</div>
 								<div class="modal-body">
-								Le montant qui vous sera remboursé est
 								</div>
 								<div class="modal-footer">
 									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>

@@ -392,6 +392,17 @@ function get_user_orders_info() {
 
                             if(status_item_order($meta_data) == false){
                                 if ($meta_key == 'Status') {
+                                    if(!empty($meta_value)){
+                                        if($lan_st === 'french'){
+                                            if($meta_key === 'Status'){
+                                                $meta_key = 'Statut';
+                                            }
+
+                                            if($meta_value === 'Refund'){
+                                                $meta_value = 'Remboursement';
+                                            }
+                                        }
+                                    }
                                     echo '<div>' . esc_html($meta_key) . ': ' . esc_html($meta_value) . '</div>';
                                 }
                             }
