@@ -358,7 +358,7 @@ function get_user_orders_info() {
                     }
                
                     // if ($order_status === 'completed' && count($items) != 1) {
-                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded' && $order_status === 'completed') {
+                    if (count($items) != 1 && status_item_order($meta_data) == true && $date_refund_timestamp > $current && $order_status !== 'refunded') {
                         echo '<button class="refund-button" data-order-id="' . $order_id . '" 
                         data-message-id="' . $item_id . '" 
                         data-order-item="' . $item_id . '"
@@ -373,7 +373,8 @@ function get_user_orders_info() {
                 echo '</div>'; // End of order items
 
                 // if ($order_status === 'completed' && count($items) === 1) {
-                if ($order_status !== 'refunded' && $order_status === 'completed') {
+                // if ($order_status !== 'refunded' && $order_status === 'completed') {
+                if ($order_status !== 'refunded') {
                     if (count($items) === 1) {
                         if(event_true($order_id) == false){
                             $date_refund = get_field('date_refund',$event_id);
@@ -500,6 +501,59 @@ function process_ajax_refund() {
 }
 add_action( 'wp_ajax_process_ajax_refund', 'process_ajax_refund' );
 add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
+
+// process ajax refund modal
+function process_ajax_refund_modal() {
+    // Check if the current user is logged in and if the order ID is passed
+    if (is_user_logged_in() && isset($_POST['order_id'])) {
+        $message = '';
+        $status = true;
+        $order_item = isset($_POST['order_item']) ? (int) $_POST['order_item'] : '';
+        $order_price = isset($_POST['order_price']) ? $_POST['order_price'] : '';
+        $order_id = intval($_POST['order_id']);
+        $order = wc_get_order($order_id);
+
+        // Ensure the order exists and is paid
+        if ( ! $order || ! $order->is_paid() ) {
+            $message = 'Les remboursements ne peuvent pas être traités';
+            $status = false;
+        }
+
+        // Get the transaction ID from the order
+        $transaction_id = $order->get_transaction_id();
+
+        // Ensure the order has a transaction ID (Stripe payment)
+        if ( ! $transaction_id ) {
+            $message = 'Les remboursements ne peuvent pas être traités';
+            $status = false;
+        }
+
+        if($status == true){
+            if(empty($order_item)){
+                $refund_amount = wc_price(get_refund_amount($order_id));
+            }else{
+                $refund_amount = wc_price($order_price);
+            }
+            $message = 'Le montant qui vous sera remboursé est '.$refund_amount;
+        }
+    } else {
+        $message = 'Utilisateur non connecté';
+        $status = false;
+    }
+
+    $return = array(
+        'message' => $message,
+        'status' => $status,
+        'order_id' => $order_id,
+        'message_id' => !empty($order_item) ? $order_item : $order_id,
+        'order_item' => $order_item,
+        'order_price' => $order_price
+    );
+
+    wp_send_json($return);
+}
+add_action( 'wp_ajax_process_ajax_refund_modal', 'process_ajax_refund_modal' );
+add_action( 'wp_ajax_nopriv_process_ajax_refund_modal', 'process_ajax_refund_modal' );
 
 // Add status refund item order
 function add_status_refund_item_order($order,$order_item,$order_id){

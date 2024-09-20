@@ -20,6 +20,11 @@ add_filter( 'locale_stylesheet_uri', 'chld_thm_cfg_locale_css' );
  * Enqueue scripts and styles.
  */
 function phn_scripts() {
+	if (is_page_template('template/account-list-order.php')) {
+		wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', array(), time(), 'all');
+		wp_enqueue_script('bootstrap-script-bundle', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array('jquery'), time(), true);
+		wp_enqueue_script('bootstrap-script', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js', array('jquery'), time(), true);
+	}
 	wp_enqueue_style('font-awesome-css', 'https://pro.fontawesome.com/releases/v5.10.0/css/all.css', array(), '0.1.0', 'all');
 	wp_enqueue_style('slick-css', get_stylesheet_directory_uri() . '/assets/slick/slick.css', array(), time(), 'all');
     wp_enqueue_style('slick-theme-css', get_stylesheet_directory_uri() . '/assets/slick/slick-theme.css', array(), time(), 'all');

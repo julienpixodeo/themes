@@ -231,6 +231,64 @@ jQuery(function($){
             url: jaxsr.url,
             type: 'POST',
             data: {
+                action: 'process_ajax_refund_modal',
+                order_id: order_id,
+                order_item: order_item,
+                order_price: order_price,
+                messageBox: message_id,
+            },
+            success: function(response) {
+                $("body").removeClass("ajax-load");
+
+                if (response.status == true) {
+                    $(".refund-button-action").attr('data-order-id', response.order_id);
+                    $(".refund-button-action").attr('data-message-id', response.message_id);
+                    $(".refund-button-action").attr('data-order-item', response.order_item);
+                    $(".refund-button-action").attr('data-order-price', response.order_price);
+                    $("#modal-alert-refund .modal-body").html(response.message);
+                    $("#modal-alert-refund").modal('show');
+                } else {
+                    messageBox.removeClass('success').addClass('error');
+                    messageBox.text(response.message);
+                    // Show the message
+                    messageBox.slideDown();
+
+                    // Hide the message after 5 seconds
+                    setTimeout(function() {
+                        messageBox.slideUp();
+                    }, 3000);
+                }
+                // location.reload();
+            },
+            error: function() {
+                $("body").removeClass("ajax-load");
+                messageBox.removeClass('success').addClass('error');
+                messageBox.text('Une erreur s\'est produite. Veuillez réessayer.');
+
+                // Show the message
+                messageBox.slideDown();
+
+                // Hide the message after 5 seconds
+                setTimeout(function() {
+                    messageBox.slideUp();
+                }, 3000);
+            }
+        });
+    });
+
+    // refund order
+    $('body').on('click','.refund-button-action', function() {
+        var order_id = $(this).data('order-id');
+        var message_id = $(this).data('message-id');
+        var order_item = $(this).data('order-item');
+        var order_price = $(this).data('order-price');
+        var messageBox = $('#message-' + message_id);
+        $("#modal-alert-refund").modal('hide');
+        $("body").addClass("ajax-load");
+        $.ajax({
+            url: jaxsr.url,
+            type: 'POST',
+            data: {
                 action: 'process_ajax_refund',
                 order_id: order_id,
                 order_item: order_item,

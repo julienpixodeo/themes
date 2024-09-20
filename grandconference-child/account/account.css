@@ -131,15 +131,19 @@ form#edit-client,.wrap-list-order {
 .wrap-list-order .refund-button {
     display: inline-block;
     margin-top: 10px;
-    padding: 10px 15px;
+    padding: 5px 15px;
     background-color: #FF2D55;
     color: #fff;
     text-decoration: none;
     border-radius: 5px;
-    font-weight: bold;
+    font-weight: normal;
     cursor: pointer;
     border: none;
     outline: none;
+}
+button.btn.btn-primary {
+    background-color: #FF2D55 !important;
+    border-color: #FF2D55 !important;
 }
 .wrap-list-order .message-box {
     display: none;
