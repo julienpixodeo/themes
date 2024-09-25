@@ -371,7 +371,7 @@ function multiple_forms_shortcode()
                         $class = ($i == $quantity) ? 'last' : '';
                         ?>
                         <div class="toggle form-<?php echo $i; ?> <?php echo $class; ?>">
-                            <h2>Form Ticket <?php echo $i; ?></h2>
+                            <h2><?php echo get_field('title_form',get_the_ID()); ?> <?php echo $i; ?></h2>
                             <?php echo do_shortcode('[contact-form-7 id="' . $form_event . '"]'); ?>
                         </div>
                         <?php

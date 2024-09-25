@@ -295,6 +295,8 @@ function get_user_orders_info() {
         $text_price = 'Prix';
         $text_refund = 'Remboursement';
         $text_refund_all  = 'Rembourser tout';
+        $error_user_login = 'Utilisateur non connecté.';
+        $error_user_no_order = 'Vous n\'avez pas encore de commandes.';
     }else{
         $text_order_id = 'Order ID';
         $text_order_date = 'Order date';
@@ -304,6 +306,8 @@ function get_user_orders_info() {
         $text_price = 'Price';
         $text_refund = 'Refund';
         $text_refund_all  = 'Refund all';
+        $error_user_login = 'User not logged in.';
+        $error_user_no_order = 'You have no orders yet.';
     }
     if ($user_id) {
         session_start();
@@ -470,10 +474,10 @@ function get_user_orders_info() {
             }
             return ob_get_clean();
         }else{
-            return 'Vous n\'avez pas encore de commandes.';
+            return $error_user_no_order;
         }  
     } else {
-        return 'Utilisateur non connecté.';
+        return $error_user_login;
     }
 }
 
@@ -499,6 +503,22 @@ add_action('init', 'register_user_orders_shortcode');
 
 // process ajax refund
 function process_ajax_refund() {
+    session_start();
+    if(isset($_SESSION['lan_st'])){
+        $lan_st = $_SESSION['lan_st'];
+    }else{
+        $lan_st = 'french';
+    }
+
+    if($lan_st === 'french'){
+        $message_error = 'Les remboursements ne peuvent pas être traités';
+        $error_user_login = 'Utilisateur non connecté.';
+        $message_success = 'Remboursement traité avec succès';
+    }else{
+        $message_error = 'Refunds cannot be processed';
+        $error_user_login = 'User not logged in.';
+        $message_success = 'Refund processed successfully';
+    }
     // Check if the current user is logged in and if the order ID is passed
     if (is_user_logged_in() && isset($_POST['order_id'])) {
         $message = '';
@@ -510,7 +530,7 @@ function process_ajax_refund() {
 
         // Ensure the order exists and is paid
         if ( ! $order || ! $order->is_paid() ) {
-            $message = 'Les remboursements ne peuvent pas être traités';
+            $message = $message_error;
             $status = false;
         }
 
@@ -519,7 +539,7 @@ function process_ajax_refund() {
 
         // Ensure the order has a transaction ID (Stripe payment)
         if ( ! $transaction_id ) {
-            $message = 'Les remboursements ne peuvent pas être traités';
+            $message = $message_error;
             $status = false;
         }
 
@@ -540,7 +560,7 @@ function process_ajax_refund() {
             ));
 
             if (is_wp_error($refund)) {
-                $message = 'Les remboursements ne peuvent pas être traités';
+                $message = $message_error;
                 $status = false;
             } else {
                 if(empty($order_item)){
@@ -549,12 +569,12 @@ function process_ajax_refund() {
                     update_stock_each_day_variation_hotel_and_stock_event_item($order,$order_item);   
                 }
                 add_status_refund_item_order($order,$order_item,$order_id);
-                $message = 'Remboursement traité avec succès';
+                $message = $message_success;
                 $status == true;
             }
         }
     } else {
-        $message = 'Utilisateur non connecté';
+        $message = $error_user_login;
         $status = false;
     }
 
@@ -570,6 +590,22 @@ add_action( 'wp_ajax_nopriv_process_ajax_refund', 'process_ajax_refund' );
 
 // process ajax refund modal
 function process_ajax_refund_modal() {
+    session_start();
+    if(isset($_SESSION['lan_st'])){
+        $lan_st = $_SESSION['lan_st'];
+    }else{
+        $lan_st = 'french';
+    }
+
+    if($lan_st === 'french'){
+        $message_error = 'Les remboursements ne peuvent pas être traités';
+        $error_user_login = 'Utilisateur non connecté.';
+        $message_success = 'Le montant qui vous sera remboursé est ';
+    }else{
+        $message_error = 'Refunds cannot be processed';
+        $error_user_login = 'User not logged in.';
+        $message_success = 'The amount that will be refunded to you is ';
+    }
     // Check if the current user is logged in and if the order ID is passed
     if (is_user_logged_in() && isset($_POST['order_id'])) {
         $message = '';
@@ -581,7 +617,7 @@ function process_ajax_refund_modal() {
 
         // Ensure the order exists and is paid
         if ( ! $order || ! $order->is_paid() ) {
-            $message = 'Les remboursements ne peuvent pas être traités';
+            $message = $message_error;
             $status = false;
         }
 
@@ -590,7 +626,7 @@ function process_ajax_refund_modal() {
 
         // Ensure the order has a transaction ID (Stripe payment)
         if ( ! $transaction_id ) {
-            $message = 'Les remboursements ne peuvent pas être traités';
+            $message = $message_error;
             $status = false;
         }
 
@@ -600,10 +636,10 @@ function process_ajax_refund_modal() {
             }else{
                 $refund_amount = wc_price($order_price);
             }
-            $message = 'Le montant qui vous sera remboursé est '.$refund_amount;
+            $message = $message_success.$refund_amount;
         }
     } else {
-        $message = 'Utilisateur non connecté';
+        $message = $error_user_login;
         $status = false;
     }
 

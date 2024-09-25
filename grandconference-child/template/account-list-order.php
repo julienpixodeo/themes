@@ -11,9 +11,13 @@ if(isset($_SESSION['lan_st'])){
 if($lan_st === 'french'){
     $title = get_the_title();
     $account = 'Compte';
+	$ok = 'Remboursement';
+	$close = 'Fermer';
 }else{
     $title = "Order";
     $account = 'Account';
+	$ok = 'Refund';
+	$close = 'Close';
 } 
 ?>
 <div id="page_caption" class="">
@@ -60,8 +64,8 @@ if($lan_st === 'french'){
 								<div class="modal-body">
 								</div>
 								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-									<button type="button" class="btn btn-primary refund-button-action">Oui</button>
+									<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php echo $close; ?></button>
+									<button type="button" class="btn btn-primary refund-button-action"><?php echo $ok; ?></button>
 								</div>
 								</div>
 							</div>
